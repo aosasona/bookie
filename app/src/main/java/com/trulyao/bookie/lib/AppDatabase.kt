@@ -7,9 +7,9 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.daos.UserDao
 import com.trulyao.bookie.entities.User
-import com.trulyao.bookie.entities.hashPassword
 import java.util.Date
 import java.util.concurrent.Executors
 
@@ -43,16 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
 
                     SHARED_THREAD_EXECUTOR.execute {
                         val userDao = getInstance(context).userDao()
-                        userDao.createUser(
-                            User(
-                                firstName = "Ayodeji",
-                                lastName = "Osasona",
-                                email = "admin@bookie.ac.uk",
-                                password = hashPassword("admin123"),
-                                isAdmin = true,
-                                dateOfBirth = Date(2004, 6, 5),
-                            ),
-                        )
+                        UserController(userDao).createDefaultAdmin()
                     }
                 }
             }
