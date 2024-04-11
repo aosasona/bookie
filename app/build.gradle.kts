@@ -75,7 +75,7 @@ dependencies {
     implementation("com.lambdapioneer.argon2kt:argon2kt:1.5.0")
 
     // Icons
-    implementation("androidx.compose.material:material-icons-extended:1.6.3")
+    implementation("androidx.compose.material:material-icons-extended:1.6.5")
 
     // For using SQLite via Room
     val room_version = "2.6.1"
