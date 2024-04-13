@@ -16,11 +16,23 @@ class UserController(dao: UserDao) {
         this.dao = dao
     }
 
-    fun signIn(email: String, password: String): Result<Boolean> {
-        val user = dao.findByEmail(email)
-            ?: return Result.failure(AppException("Invalid credentials provided"))
+    fun signIn(email: String, password: String): Int {
+        val user = dao.findByEmail(email) ?: throw AppException("Account not found")
 
-        return Result.success(true)
+        if (comparePassword(rawPasswordString = password, hash = user.password).not()) {
+            throw AppException("Invalid credentials provided")
+        }
+
+        return user.id!!
+    }
+
+    fun signUp(user: User): Int {
+        val existingUser = dao.findByEmail(user.email)
+        if (existingUser != null) {
+            throw AppException("An account with this username already exists")
+        }
+
+        return 1;
     }
 
     fun createDefaultAdmin() {

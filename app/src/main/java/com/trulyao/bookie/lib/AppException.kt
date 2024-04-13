@@ -14,7 +14,7 @@ public fun handleException(context: Context, e: Exception) {
         else -> {
             System.err.println(e.message)
             System.err.println(e.stackTrace)
-            "Something went wrong, see logs for more details"
+            "Something went wrong"
         }
     }
 
