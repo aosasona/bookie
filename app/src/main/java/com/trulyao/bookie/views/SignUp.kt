@@ -1,7 +1,9 @@
 package com.trulyao.bookie.views
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +42,7 @@ fun SignUp(navigateToSignIn: () -> Unit) {
     }
 
 
-    Column {
+    Column(modifier = Modifier.padding(16.dp)) {
         Column {
             Text(
                 text = "Sign Up",
@@ -55,7 +57,9 @@ fun SignUp(navigateToSignIn: () -> Unit) {
             )
         }
 
-        Column {
+        Spacer(modifier = Modifier.size(20.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             TextInput(
                 title = "First name",
                 value = firstName,
@@ -66,8 +70,6 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                     imeAction = ImeAction.Next
                 )
             )
-
-            Spacer(modifier = Modifier.size(8.dp))
 
             TextInput(
                 title = "Last name",

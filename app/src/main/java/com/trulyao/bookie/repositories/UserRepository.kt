@@ -1,4 +1,4 @@
-package com.trulyao.bookie.controllers
+package com.trulyao.bookie.repositories
 
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2Mode
@@ -9,7 +9,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.Date
 
-class UserController(dao: UserDao) {
+class UserRepository(dao: UserDao) {
     private val dao: UserDao;
 
     init {

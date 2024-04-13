@@ -65,7 +65,9 @@ fun SignIn(navigateToSignUp: () -> Unit) {
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
+
             Spacer(modifier = Modifier.size(6.dp))
+
             Text(
                 "Enter your credentials to continue",
                 style = MaterialTheme.typography.labelLarge,
@@ -73,7 +75,7 @@ fun SignIn(navigateToSignUp: () -> Unit) {
             )
         }
 
-        Column {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             TextInput(
                 title = "Email-address",
                 value = email,
@@ -85,8 +87,6 @@ fun SignIn(navigateToSignUp: () -> Unit) {
                     imeAction = ImeAction.Next
                 )
             )
-
-            Spacer(modifier = Modifier.size(12.dp))
 
             TextInput(
                 title = "Password",

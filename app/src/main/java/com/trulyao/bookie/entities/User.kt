@@ -17,10 +17,12 @@ data class User(
     @ColumnInfo(name = "password") val password: String,
     @ColumnInfo(name = "is_admin") val isAdmin: Boolean,
     @ColumnInfo(name = "date_of_birth") val dateOfBirth: Date,
+
     @ColumnInfo(
         name = "created_at",
         defaultValue = "CURRENT_TIMESTAMP"
     ) val createdAt: Long? = null,
+
     @ColumnInfo(
         name = "modified_at",
         defaultValue = "CURRENT_TIMESTAMP"
