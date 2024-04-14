@@ -6,13 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,6 +27,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.TextInput
 import com.trulyao.bookie.lib.handleException
 import com.trulyao.bookie.ui.theme.BookieTheme
@@ -56,17 +54,17 @@ fun SignIn(navigateToSignUp: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(28.dp)
     ) {
-        Column {
+        Column(modifier = Modifier.padding(top = 8.dp)) {
             Text(
                 text = "Sign In",
-                style = MaterialTheme.typography.headlineMedium,
+                fontSize = 42.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.size(6.dp))
+            Spacer(modifier = Modifier.size(10.dp))
 
             Text(
                 "Enter your credentials to continue",
@@ -75,7 +73,7 @@ fun SignIn(navigateToSignUp: () -> Unit) {
             )
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             TextInput(
                 title = "Email-address",
                 value = email,
@@ -108,23 +106,12 @@ fun SignIn(navigateToSignUp: () -> Unit) {
                 Text("Create an account")
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            LoadingButton(
+                isLoading = isLoading,
+                onClick = { handleSignIn() },
+                horizontalArrangement = Arrangement.End
             ) {
-                Button(onClick = { handleSignIn() }, enabled = isLoading.not()) {
-                    Text("Sign In")
-                }
-
-                if (isLoading) {
-                    Spacer(modifier = Modifier.size(12.dp))
-
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .width(28.dp)
-                            .height(28.dp)
-                    )
-                }
+                Text("Sign in")
             }
         }
     }

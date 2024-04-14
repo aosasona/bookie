@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app")
 
 enum class StoreKey {
-    User
+    CurrentUserID
 }
 
 // A simple wrapper class to get and set (insert, update) data in the DataStore
@@ -22,7 +22,7 @@ class Store {
         // Get preference key and cast to generic type, unsafe but we are hoping the generic will constraint the input anyway
         private fun <T> getPrefKey(key: StoreKey): Preferences.Key<T> {
             return when (key) {
-                StoreKey.User -> intPreferencesKey("signed_in_user")
+                StoreKey.CurrentUserID -> intPreferencesKey("signed_in_user")
             } as Preferences.Key<T>
         }
 

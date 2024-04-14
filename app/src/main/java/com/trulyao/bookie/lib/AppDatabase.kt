@@ -7,15 +7,17 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.trulyao.bookie.repositories.UserRepository
 import com.trulyao.bookie.daos.UserDao
+import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
+import com.trulyao.bookie.entities.getRoleMapping
+import com.trulyao.bookie.repositories.UserRepository
 import java.util.Date
 import java.util.concurrent.Executors
 
 private val SHARED_THREAD_EXECUTOR = Executors.newSingleThreadExecutor()
 
-@Database(entities = [User::class], version = 1)
+@Database(entities = [User::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -61,4 +63,19 @@ class Converters {
     fun dateToTimestamp(value: Date): Long {
         return value.time.toLong()
     }
+
+    @TypeConverter
+    fun fromInt(value: Int): Role {
+        for (item in getRoleMapping()) {
+            if (item.value == value) return item.key
+        }
+
+        throw AppException("Invalid value provided for role mapping")
+    }
+
+    @TypeConverter
+    fun roleToInt(role: Role): Int {
+        return getRoleMapping()[role] ?: throw AppException("Invalid role provided")
+    }
+
 }
