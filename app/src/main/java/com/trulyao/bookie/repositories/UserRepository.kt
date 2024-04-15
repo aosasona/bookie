@@ -13,6 +13,18 @@ import java.util.Base64
 import java.util.Date
 import java.util.UUID
 
+data class CreateUserData(
+    var firstName: String,
+    var lastName: String,
+    var email: String,
+    var dateOfBirth: Date,
+    var password: String,
+    var confirmPassword: String,
+)
+
+val nameRegex = Regex("^[a-zA-Z]{3,}$")
+val emailRegex = Regex("^[a-zA-Z0-9._-]+@bookie\\.ac\\.uk$")
+
 class UserRepository(dao: UserDao) {
     private val dao: UserDao;
 
@@ -30,13 +42,34 @@ class UserRepository(dao: UserDao) {
         return user.id!!
     }
 
-    fun signUp(user: User): Int {
-        val existingUser = dao.findByEmail(user.email)
-        if (existingUser != null) {
-            throw AppException("An account with this username already exists")
-        }
+    fun signUp(data: CreateUserData, role: Role = Role.Student): Int {
+        data.firstName = data.firstName.trim().lowercase()
+        data.lastName = data.lastName.trim().lowercase()
+        data.email = data.email.trim().lowercase()
+        data.password = data.password.trim()
 
-        return 1;
+        if (!data.firstName.matches(nameRegex)) throw AppException("First name must be at least 3 characters and only contain alphabets")
+        if (!data.lastName.matches(nameRegex)) throw AppException("Last name must be at least 3 characters and only contain alphabets")
+        if (!data.email.matches(emailRegex)) throw AppException("Invalid email address provided, must only contain alphanumeric characters, ., _ and - and end with @bookie.ac.uk")
+        if (data.password.isEmpty()) throw AppException("Password is required")
+        if (data.password !== data.confirmPassword) throw AppException("Passwords are not the same!")
+
+        val existingUser = dao.findByEmail(data.email)
+        if (existingUser != null && existingUser.id!! > 0) throw AppException("An account with this username already exists")
+
+        val insertedUserID = dao.createUser(
+            User(
+                firstName = data.firstName,
+                lastName = data.lastName,
+                email = data.email,
+                password = data.password,
+                netHash = generateNetworkHash(data.firstName, data.email),
+                role = role,
+                dateOfBirth = data.dateOfBirth
+            )
+        )
+
+        return insertedUserID.toInt()
     }
 
     fun createDefaultAdmin() {

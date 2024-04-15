@@ -9,7 +9,7 @@ import com.trulyao.bookie.entities.User
 @Dao
 interface UserDao {
     @Insert(onConflict = OnConflictStrategy.NONE)
-    fun createUser(user: User)
+    fun createUser(user: User): Long
 
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     fun findByEmail(email: String): User?
