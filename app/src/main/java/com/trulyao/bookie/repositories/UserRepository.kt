@@ -33,7 +33,12 @@ class UserRepository(dao: UserDao) {
     }
 
     fun signIn(email: String, password: String): Int {
-        val user = dao.findByEmail(email) ?: throw AppException("Account not found")
+        if (!email.trim().matches(emailRegex)) {
+            throw AppException("Invalid email address provided, must only contain alphanumeric characters, ., _ and - and end with @bookie.ac.uk")
+        }
+        if (password.trim().isEmpty()) throw AppException("Password is required")
+
+        val user = dao.findByEmail(email.trim()) ?: throw AppException("Account not found")
 
         if (comparePassword(rawPasswordString = password, hash = user.password).not()) {
             throw AppException("Invalid credentials provided")
