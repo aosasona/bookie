@@ -6,12 +6,15 @@ import com.trulyao.bookie.daos.UserDao
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.lib.AppException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 import java.util.Base64
 import java.util.Date
-import java.util.UUID
+import kotlin.concurrent.Volatile
 
 data class CreateUserData(
     var firstName: String,
@@ -25,29 +28,52 @@ data class CreateUserData(
 val nameRegex = Regex("^[a-zA-Z]{3,}$")
 val emailRegex = Regex("^[a-zA-Z0-9._-]+@bookie\\.ac\\.uk$")
 
-class UserRepository(dao: UserDao) {
-    private val dao: UserDao;
-
-    init {
-        this.dao = dao
+class UserRepository private constructor(
+    private val dao: UserDao,
+    private val dispatcher: CoroutineDispatcher,
+) {
+    companion object {
+        @Volatile
+        private var instance: UserRepository? = null
+        fun getInstance(
+            dao: UserDao,
+            dispatcher: CoroutineDispatcher,
+        ): UserRepository {
+            return if (this.instance != null) {
+                this.instance!!
+            } else {
+                synchronized(this) {
+                    instance ?: UserRepository(
+                        dao,
+                        dispatcher
+                    ).also { repo -> instance = repo }
+                }
+            }
+        }
     }
 
-    fun signIn(email: String, password: String): Int {
+    suspend fun signIn(email: String, password: String): Int {
+        if (email.isEmpty()) throw AppException("No email address provided")
+        if (password.isEmpty()) throw AppException("No password provided")
+
         if (!email.trim().matches(emailRegex)) {
             throw AppException("Invalid email address provided, must only contain alphanumeric characters, ., _ and - and end with @bookie.ac.uk")
         }
+
         if (password.trim().isEmpty()) throw AppException("Password is required")
 
-        val user = dao.findByEmail(email.trim()) ?: throw AppException("Account not found")
+        val user = withContext(dispatcher) {
+            dao.findByEmail(email.trim()) ?: throw AppException("Account not found");
+        }
 
-        if (comparePassword(rawPasswordString = password, hash = user.password).not()) {
+        if (comparePassword(password = password, hashedPassword = user.password).not()) {
             throw AppException("Invalid credentials provided")
         }
 
         return user.id!!
     }
 
-    fun signUp(data: CreateUserData, role: Role = Role.Student): Int {
+    suspend fun signUp(data: CreateUserData, role: Role = Role.Student): Int {
         data.firstName = data.firstName.trim().lowercase()
         data.lastName = data.lastName.trim().lowercase()
         data.email = data.email.trim().lowercase()
@@ -57,22 +83,29 @@ class UserRepository(dao: UserDao) {
         if (!data.lastName.matches(nameRegex)) throw AppException("Last name must be at least 3 characters and only contain alphabets")
         if (!data.email.matches(emailRegex)) throw AppException("Invalid email address provided, must only contain alphanumeric characters, ., _ and - and end with @bookie.ac.uk")
         if (data.password.isEmpty()) throw AppException("Password is required")
-        if (data.password !== data.confirmPassword) throw AppException("Passwords are not the same!")
+        if (data.password != data.confirmPassword) throw AppException("Passwords are not the same!")
 
-        val existingUser = dao.findByEmail(data.email)
-        if (existingUser != null && existingUser.id!! > 0) throw AppException("An account with this username already exists")
+        val existingUser = withContext(dispatcher) {
+            dao.findByEmail(data.email)
+        };
 
-        val insertedUserID = dao.createUser(
-            User(
-                firstName = data.firstName,
-                lastName = data.lastName,
-                email = data.email,
-                password = data.password,
-                netHash = generateNetworkHash(data.firstName, data.email),
-                role = role,
-                dateOfBirth = data.dateOfBirth
+        if (existingUser != null && existingUser.id!! > 0) throw AppException("An account with this email already exists")
+
+        val insertedUserID = withContext(dispatcher) {
+            dao.createUser(
+                User(
+                    firstName = data.firstName,
+                    lastName = data.lastName,
+                    email = data.email,
+                    password = hashPassword(data.password),
+                    netHash = generateNetworkHash(data.firstName, data.email),
+                    role = role,
+                    dateOfBirth = data.dateOfBirth,
+                    createdAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                    modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                )
             )
-        )
+        }
 
         return insertedUserID.toInt()
     }
@@ -80,15 +113,19 @@ class UserRepository(dao: UserDao) {
     fun createDefaultAdmin() {
         dao.createUser(
             User(
-                firstName = "Julian",
-                lastName = "Blake",
+                firstName = "julian",
+                lastName = "blake",
                 email = "jb@bookie.ac.uk",
-                password = this.hashPassword("admin123"),
+                password = this.hashPassword("Admin123"),
                 role = Role.Admin,
                 netHash = generateNetworkHash("Julian", "jb@bookie.ac.uk"),
                 dateOfBirth = Date.from(
-                    LocalDate.of(1990, 8, 21).atStartOfDay().toInstant(ZoneOffset.UTC)
-                )
+                    LocalDate.of(1990, 8, 21)
+                        .atStartOfDay()
+                        .toInstant(ZoneOffset.UTC)
+                ),
+                createdAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
             ),
         )
     }
@@ -106,12 +143,12 @@ class UserRepository(dao: UserDao) {
         return hashedPassword.encodedOutputAsString()
     }
 
-    private fun comparePassword(rawPasswordString: String, hash: String): Boolean {
+    private fun comparePassword(password: String, hashedPassword: String): Boolean {
         val argon2 = Argon2Kt()
         return argon2.verify(
             mode = Argon2Mode.ARGON2_I,
-            encoded = hash,
-            password = rawPasswordString.toByteArray()
+            encoded = hashedPassword,
+            password = password.toByteArray()
         )
     }
 
@@ -123,8 +160,6 @@ class UserRepository(dao: UserDao) {
             .getEncoder()
             .encodeToString("${timestamp}_${firstName}_${emailWithoutSuffix}".toByteArray())
 
-        val uuid = UUID.fromString(hashStr).toString()
-
-        return uuid.replace("-", "").substring(0, 16);
+        return hashStr.replace(Regex("[^a-zA-Z0-9_]"), "").substring(0, 16);
     }
 }

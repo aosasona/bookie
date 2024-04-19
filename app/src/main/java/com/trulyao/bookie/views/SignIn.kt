@@ -15,6 +15,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,20 +31,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.TextInput
+import com.trulyao.bookie.lib.AppDatabase
+import com.trulyao.bookie.lib.Store
+import com.trulyao.bookie.lib.StoreKey
 import com.trulyao.bookie.lib.handleException
+import com.trulyao.bookie.repositories.UserRepository
 import com.trulyao.bookie.ui.theme.BookieTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignIn(navigateToSignUp: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var isLoading by rememberSaveable { mutableStateOf(false) }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
-    fun handleSignIn() {
+    suspend fun handleSignIn() {
         try {
             isLoading = true
+            val userRepo = UserRepository.getInstance(
+                AppDatabase.getInstance(context).userDao(),
+                Dispatchers.IO
+            )
+            val userId = userRepo.signIn(email, password);
+            Store.set(context, StoreKey.CurrentUserID, userId)
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
@@ -108,7 +122,7 @@ fun SignIn(navigateToSignUp: () -> Unit) {
 
             LoadingButton(
                 isLoading = isLoading,
-                onClick = { handleSignIn() },
+                onClick = { scope.launch { handleSignIn() } },
                 horizontalArrangement = Arrangement.End
             ) {
                 Text("Sign in")

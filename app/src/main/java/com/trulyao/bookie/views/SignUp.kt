@@ -1,21 +1,27 @@
 package com.trulyao.bookie.views
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,23 +36,60 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.TextInput
+import com.trulyao.bookie.entities.Role
+import com.trulyao.bookie.lib.Alert
+import com.trulyao.bookie.lib.AppDatabase
+import com.trulyao.bookie.lib.AppException
 import com.trulyao.bookie.lib.handleException
+import com.trulyao.bookie.repositories.CreateUserData
+import com.trulyao.bookie.repositories.UserRepository
 import com.trulyao.bookie.ui.theme.BookieTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.Date
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUp(navigateToSignIn: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     var isLoading by remember { mutableStateOf(false) }
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
+    val dob = rememberDatePickerState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    fun handleSignUp() {
+    suspend fun handleSignUp() {
         try {
             isLoading = true
+
+            if (dob.selectedDateMillis == null) throw AppException("Date of birth is invalid or empty")
+
+            val userRepo = UserRepository.getInstance(
+                AppDatabase.getInstance(context).userDao(),
+                Dispatchers.IO
+            )
+            val data = CreateUserData(
+                firstName = firstName,
+                lastName = lastName,
+                email = email,
+                dateOfBirth = Date(dob.selectedDateMillis!!),
+                password = password,
+                confirmPassword = confirmPassword
+            )
+
+            val createdUserId = userRepo.signUp(data)
+            if (createdUserId <= 0) throw AppException("Failed to create account, please try again later")
+
+            Alert.show(
+                context,
+                alertType = Alert.AlertType.Success,
+                message = "Your account has been successfully created, you can now proceed to sign in :)",
+            )
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
@@ -55,7 +98,12 @@ fun SignUp(navigateToSignIn: () -> Unit) {
     }
 
 
-    Column(modifier = Modifier.padding(20.dp).fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .padding(20.dp)
+            .fillMaxWidth()
+            .verticalScroll(enabled = true, state = scrollState),
+    ) {
         Column(modifier = Modifier.padding(top = 8.dp)) {
             Text(
                 text = "Sign Up",
@@ -102,7 +150,10 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 value = email,
                 onChange = { email = it },
                 placeholderText = "john@bookie.ac.uk",
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                )
             )
 
             TextInput(
@@ -111,7 +162,10 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 onChange = { password = it },
                 placeholderText = "******",
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                )
             )
 
             TextInput(
@@ -120,7 +174,15 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 onChange = { confirmPassword = it },
                 placeholderText = "******",
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Next
+                )
+            )
+
+            DatePicker(
+                state = dob,
+                title = { Text("Date of birth") }
             )
         }
 
@@ -137,12 +199,14 @@ fun SignUp(navigateToSignIn: () -> Unit) {
 
             LoadingButton(
                 isLoading = isLoading,
-                onClick = { handleSignUp() },
+                onClick = { scope.launch { handleSignUp() } },
                 horizontalArrangement = Arrangement.End
             ) {
                 Text("Sign up")
             }
         }
+
+        Spacer(modifier = Modifier.size(50.dp))
     }
 }
 

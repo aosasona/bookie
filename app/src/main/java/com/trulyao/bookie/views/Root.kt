@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -35,30 +36,36 @@ fun Root() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            NavHost(navController = navController, startDestination = Views.SignIn.name) {
-                composable(Views.SignIn.name) {
+            NavHost(navController = navController, startDestination = SharedRoutes.SignIn.name) {
+                composable(SharedRoutes.SignIn.name) {
                     SignIn(navigateToSignUp = {
-                        navController.navigate(
-                            Views.SignUp.name
-                        )
+                        navController.navigate(SharedRoutes.SignUp.name)
                     })
                 }
 
-                composable(Views.SignUp.name) {
+                composable(SharedRoutes.SignUp.name) {
                     SignUp(navigateToSignIn = {
-                        navController.navigate(
-                            Views.SignIn.name
-                        )
+                        navController.navigate(SharedRoutes.SignIn.name)
                     })
                 }
-
-                // Protected routes
-//                when (user?.role) {
-//                    Role.Student -> StudentRoutes()
-//                    Role.Admin -> AdminRoutes()
-//                    else -> return@NavHost
-//                }
             }
         }
     }
+}
+
+fun userRoute(route: UserRoutes): String {
+    return "user_${route.name}"
+}
+
+
+fun adminRoute(route: AdminRoutes): String {
+    return "admin_${route.name}"
+}
+
+fun NavController.toUserView(route: UserRoutes) {
+    navigate("user_${route.name}")
+}
+
+fun NavController.toAdminView(route: UserRoutes) {
+    navigate("admin_${route.name}")
 }

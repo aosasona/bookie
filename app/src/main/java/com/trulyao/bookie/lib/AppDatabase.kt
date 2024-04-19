@@ -12,12 +12,17 @@ import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.entities.getRoleMapping
 import com.trulyao.bookie.repositories.UserRepository
+import kotlinx.coroutines.Dispatchers
 import java.util.Date
 import java.util.concurrent.Executors
 
 private val SHARED_THREAD_EXECUTOR = Executors.newSingleThreadExecutor()
 
-@Database(entities = [User::class], version = 2)
+@Database(
+    version = 1,
+    entities = [User::class],
+    exportSchema = true
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -34,7 +39,13 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         private fun build(context: Context): AppDatabase {
-            return Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "data")
+            return Room
+                .databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "data.db"
+                )
+                .addCallback(seedDatabase(context))
                 .build()
         }
 
@@ -45,7 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
 
                     SHARED_THREAD_EXECUTOR.execute {
                         val userDao = getInstance(context).userDao()
-                        UserRepository(userDao).createDefaultAdmin()
+                        UserRepository.getInstance(userDao, Dispatchers.IO).createDefaultAdmin()
                     }
                 }
             }
