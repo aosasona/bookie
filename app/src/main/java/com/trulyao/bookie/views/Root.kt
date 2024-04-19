@@ -1,7 +1,9 @@
 package com.trulyao.bookie.views
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,21 +34,30 @@ fun Root() {
     }
 
     BookieTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            NavHost(navController = navController, startDestination = SharedRoutes.SignIn.name) {
-                composable(SharedRoutes.SignIn.name) {
-                    SignIn(navigateToSignUp = {
-                        navController.navigate(SharedRoutes.SignUp.name)
-                    })
-                }
+        Scaffold(
+            bottomBar = { /* TODO: implement bottom bar */ }
+        ) { innerPadding ->
+            Surface(
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = innerPadding.calculateBottomPadding())
+            ) {
+                NavHost(
+                    navController = navController,
+                    startDestination = SharedRoutes.SignIn.name
+                ) {
+                    composable(SharedRoutes.SignIn.name) {
+                        SignIn(navigateToSignUp = {
+                            navController.navigate(SharedRoutes.SignUp.name)
+                        })
+                    }
 
-                composable(SharedRoutes.SignUp.name) {
-                    SignUp(navigateToSignIn = {
-                        navController.navigate(SharedRoutes.SignIn.name)
-                    })
+                    composable(SharedRoutes.SignUp.name) {
+                        SignUp(navigateToSignIn = {
+                            navController.navigate(SharedRoutes.SignIn.name)
+                        })
+                    }
                 }
             }
         }
