@@ -84,12 +84,6 @@ fun Root(
                             navigateToSignUp = {
                                 navController.navigate(SharedRoutes.SignUp.name)
                             },
-                            navigateHome = { role ->
-                                when (role) {
-                                    Role.Student -> navController.toUserView(UserRoutes.Home)
-                                    Role.Admin -> navController.toAdminView(AdminRoutes.Students)
-                                }
-                            }
                         )
                     }
 
@@ -98,6 +92,8 @@ fun Root(
                             navController.navigate(SharedRoutes.SignIn.name)
                         })
                     }
+
+                    if (user == null) return@NavHost;
 
                     // Student routes
                     if (user?.role == Role.Student) {
@@ -110,7 +106,9 @@ fun Root(
                         }
 
                         composable(userRoute(UserRoutes.Profile)) {
-                            Profile(user = user!!)
+                            Profile(user = user!!, navigateToSignIn = {
+                                navController.navigate(SharedRoutes.SignIn.name)
+                            })
                         }
                     }
 
@@ -128,7 +126,6 @@ fun Root(
                             Moderation(user = user!!)
                         }
                     }
-
                 }
             }
         }
