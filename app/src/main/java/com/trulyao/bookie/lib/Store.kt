@@ -27,7 +27,7 @@ class Store {
         }
 
         // Get data from the datastore or return a default
-        public fun <T> getOrDefault(context: Context, key: StoreKey, default: T): Flow<T> {
+        public fun <T> getOrDefault(context: Context, key: StoreKey, default: T): Flow<T?> {
             val prefKey = getPrefKey<T>(key)
             return context.dataStore.data.map { data ->
                 data[prefKey] ?: default

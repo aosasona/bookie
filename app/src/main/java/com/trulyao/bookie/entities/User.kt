@@ -1,9 +1,12 @@
 package com.trulyao.bookie.entities
 
+import android.content.Context
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.trulyao.bookie.lib.Store
+import com.trulyao.bookie.lib.StoreKey
 import java.util.Date
 
 enum class Role {
@@ -35,4 +38,8 @@ fun getRoleMapping(): HashMap<Role, Int> {
     roleMapping[Role.Admin] = 2
 
     return roleMapping
+}
+
+suspend fun signOut(context: Context) {
+    Store.set(context, StoreKey.CurrentUserID, null)
 }

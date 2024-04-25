@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.TextInput
+import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.Store
 import com.trulyao.bookie.lib.StoreKey
@@ -41,7 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun SignIn(navigateToSignUp: () -> Unit) {
+fun SignIn(navigateToSignUp: () -> Unit, navigateHome: (Role) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -56,8 +57,9 @@ fun SignIn(navigateToSignUp: () -> Unit) {
                 AppDatabase.getInstance(context).userDao(),
                 Dispatchers.IO
             )
-            val userId = userRepo.signIn(email, password);
-            Store.set(context, StoreKey.CurrentUserID, userId)
+            val user = userRepo.signIn(email, password);
+            Store.set(context, StoreKey.CurrentUserID, user.id)
+            navigateHome(user.role)
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
@@ -135,6 +137,6 @@ fun SignIn(navigateToSignUp: () -> Unit) {
 @Composable
 fun SignInPreview() {
     BookieTheme {
-        SignIn(navigateToSignUp = {})
+        SignIn(navigateToSignUp = {}, navigateHome = {})
     }
 }

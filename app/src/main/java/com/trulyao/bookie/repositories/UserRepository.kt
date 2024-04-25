@@ -52,7 +52,7 @@ class UserRepository private constructor(
         }
     }
 
-    suspend fun signIn(email: String, password: String): Int {
+    suspend fun signIn(email: String, password: String): User {
         if (email.isEmpty()) throw AppException("No email address provided")
         if (password.isEmpty()) throw AppException("No password provided")
 
@@ -70,7 +70,7 @@ class UserRepository private constructor(
             throw AppException("Invalid credentials provided")
         }
 
-        return user.id!!
+        return user
     }
 
     suspend fun signUp(data: CreateUserData, role: Role = Role.Student): Int {

@@ -1,6 +1,5 @@
 package com.trulyao.bookie.views
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.TextInput
-import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.lib.Alert
 import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.AppException
