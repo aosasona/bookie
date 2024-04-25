@@ -163,3 +163,16 @@ class UserRepository private constructor(
         return hashStr.replace(Regex("[^a-zA-Z0-9_]"), "").substring(0, 16);
     }
 }
+
+fun mockUser(role: Role) = User(
+    id = 1_000_000_000,
+    firstName = "John",
+    lastName = "Doe",
+    email = "test@bookie.ac.uk",
+    password = "",
+    dateOfBirth = Date(651196800000),
+    role = role,
+    netHash = "testUser",
+    createdAt = 1713573878,
+    modifiedAt = 1713573878,
+)
