@@ -93,7 +93,7 @@ fun Root(
                         })
                     }
 
-                    if (user == null) return@NavHost;
+                    if (user == null) return@NavHost
 
                     // Student routes
                     if (user?.role == Role.Student) {

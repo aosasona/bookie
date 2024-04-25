@@ -56,7 +56,7 @@ fun SignIn(navigateToSignUp: () -> Unit) {
                 AppDatabase.getInstance(context).userDao(),
                 Dispatchers.IO
             )
-            val user = userRepo.signIn(email, password);
+            val user = userRepo.signIn(email, password)
             Store.set(context, StoreKey.CurrentUserID, user.id)
         } catch (e: Exception) {
             handleException(context, e)
