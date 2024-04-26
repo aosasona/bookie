@@ -33,6 +33,7 @@ import com.trulyao.bookie.views.admin.Moderation
 import com.trulyao.bookie.views.admin.Students
 import com.trulyao.bookie.views.admin.Users
 import com.trulyao.bookie.views.students.Activities
+import com.trulyao.bookie.views.students.ChangePassword
 import com.trulyao.bookie.views.students.Home
 import com.trulyao.bookie.views.students.Profile
 import kotlinx.coroutines.Dispatchers
@@ -109,6 +110,10 @@ fun Root(
                             Profile(user = user!!, navigateToSignIn = {
                                 navController.navigate(SharedRoutes.SignIn.name)
                             })
+                        }
+
+                        composable(userRoute(UserRoutes.ChangePassword)) {
+                            ChangePassword(user = user!!)
                         }
                     }
 

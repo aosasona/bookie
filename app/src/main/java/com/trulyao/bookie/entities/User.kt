@@ -19,12 +19,12 @@ enum class Role {
 data class User(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
 
-    @ColumnInfo(name = "first_name") val firstName: String,
-    @ColumnInfo(name = "last_name") val lastName: String,
-    @ColumnInfo(name = "email") val email: String,
+    @ColumnInfo(name = "first_name") var firstName: String,
+    @ColumnInfo(name = "last_name") var lastName: String,
+    @ColumnInfo(name = "email") var email: String,
     @ColumnInfo(name = "password") val password: String,
     @ColumnInfo(name = "role") val role: Role,
-    @ColumnInfo(name = "date_of_birth") val dateOfBirth: Date,
+    @ColumnInfo(name = "date_of_birth") var dateOfBirth: Date,
     @ColumnInfo(name = "network_name") val netHash: String, // used for network discovery and P2P instances
 
     @ColumnInfo(name = "created_at") val createdAt: Long,

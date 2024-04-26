@@ -11,7 +11,8 @@ public enum class SharedRoutes {
 public enum class UserRoutes {
     Home,
     Activities,
-    Profile
+    Profile,
+    ChangePassword
 }
 
 public enum class AdminRoutes {
