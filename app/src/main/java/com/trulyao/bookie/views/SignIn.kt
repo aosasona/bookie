@@ -31,11 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.TextInput
+import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.Store
 import com.trulyao.bookie.lib.StoreKey
 import com.trulyao.bookie.lib.handleException
-import com.trulyao.bookie.repositories.UserRepository
 import com.trulyao.bookie.ui.theme.BookieTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,7 +52,7 @@ fun SignIn(navigateToSignUp: () -> Unit) {
     suspend fun handleSignIn() {
         try {
             isLoading = true
-            val userRepo = UserRepository.getInstance(
+            val userRepo = UserController.getInstance(
                 AppDatabase.getInstance(context).userDao(),
                 Dispatchers.IO
             )

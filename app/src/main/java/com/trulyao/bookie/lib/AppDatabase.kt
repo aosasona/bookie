@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.daos.UserDao
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.entities.getRoleMapping
-import com.trulyao.bookie.repositories.UserRepository
 import kotlinx.coroutines.Dispatchers
 import java.util.Date
 import java.util.concurrent.Executors
@@ -56,7 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
 
                     SHARED_THREAD_EXECUTOR.execute {
                         val userDao = getInstance(context).userDao()
-                        UserRepository.getInstance(userDao, Dispatchers.IO).createDefaultAdmin()
+                        UserController.getInstance(userDao, Dispatchers.IO).createDefaultAdmin()
                     }
                 }
             }

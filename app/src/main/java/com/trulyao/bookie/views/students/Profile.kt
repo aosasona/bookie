@@ -1,5 +1,6 @@
 package com.trulyao.bookie.views.students
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,11 +41,11 @@ import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.ProtectedView
 import com.trulyao.bookie.components.TextInput
 import com.trulyao.bookie.components.UserBottomNavigationBar
+import com.trulyao.bookie.controllers.mockUser
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.entities.signOut
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
-import com.trulyao.bookie.repositories.mockUser
 import com.trulyao.bookie.views.models.ProfileViewModel
 import kotlinx.coroutines.launch
 
@@ -52,8 +53,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun Profile(
     user: User,
-    viewModel: ProfileViewModel = ProfileViewModel(user),
     navigateToSignIn: () -> Unit,
+    viewModel: ProfileViewModel = ProfileViewModel(user),
+    scrollState: ScrollState = rememberScrollState(),
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -71,7 +73,7 @@ fun Profile(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(DEFAULT_VIEW_PADDING)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
         ) {
 
             Text(

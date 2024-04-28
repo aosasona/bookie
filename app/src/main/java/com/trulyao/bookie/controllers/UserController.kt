@@ -1,4 +1,4 @@
-package com.trulyao.bookie.repositories
+package com.trulyao.bookie.controllers
 
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2Mode
@@ -28,22 +28,22 @@ data class CreateUserData(
 val nameRegex = Regex("^[a-zA-Z]{3,}$")
 val emailRegex = Regex("^[a-zA-Z0-9._-]+@bookie\\.ac\\.uk$")
 
-class UserRepository private constructor(
+class UserController private constructor(
     private val dao: UserDao,
     private val dispatcher: CoroutineDispatcher,
 ) {
     companion object {
         @Volatile
-        private var instance: UserRepository? = null
+        private var instance: UserController? = null
         fun getInstance(
             dao: UserDao,
             dispatcher: CoroutineDispatcher,
-        ): UserRepository {
+        ): UserController {
             return if (this.instance != null) {
                 this.instance!!
             } else {
                 synchronized(this) {
-                    instance ?: UserRepository(
+                    instance ?: UserController(
                         dao,
                         dispatcher
                     ).also { repo -> instance = repo }
@@ -108,6 +108,14 @@ class UserRepository private constructor(
         }
 
         return insertedUserID.toInt()
+    }
+
+    suspend fun changePassword(
+        oldPassword: String,
+        newPassword: String,
+        newPasswordConfirmation: String,
+    ) {
+
     }
 
     fun createDefaultAdmin() {

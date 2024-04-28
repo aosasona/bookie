@@ -35,12 +35,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.TextInput
+import com.trulyao.bookie.controllers.CreateUserData
+import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.lib.Alert
 import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.AppException
 import com.trulyao.bookie.lib.handleException
-import com.trulyao.bookie.repositories.CreateUserData
-import com.trulyao.bookie.repositories.UserRepository
 import com.trulyao.bookie.ui.theme.BookieTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -67,7 +67,7 @@ fun SignUp(navigateToSignIn: () -> Unit) {
 
             if (dob.selectedDateMillis == null) throw AppException("Date of birth is invalid or empty")
 
-            val userRepo = UserRepository.getInstance(
+            val userRepo = UserController.getInstance(
                 AppDatabase.getInstance(context).userDao(),
                 Dispatchers.IO
             )
