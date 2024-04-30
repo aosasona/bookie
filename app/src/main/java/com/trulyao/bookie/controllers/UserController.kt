@@ -7,6 +7,7 @@ import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.lib.AppException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -37,7 +38,7 @@ class UserController private constructor(
         private var instance: UserController? = null
         fun getInstance(
             dao: UserDao,
-            dispatcher: CoroutineDispatcher,
+            dispatcher: CoroutineDispatcher = Dispatchers.IO,
         ): UserController {
             return if (this.instance != null) {
                 this.instance!!
@@ -111,11 +112,32 @@ class UserController private constructor(
     }
 
     suspend fun changePassword(
+        userId: Int,
         oldPassword: String,
         newPassword: String,
-        newPasswordConfirmation: String,
+        confirmPassword: String,
     ) {
+        if (newPassword != confirmPassword) throw AppException("New password is not the same as the password confirmation")
+        val user = withContext(dispatcher) {
+            // We could just pass in the whole user context instead of this extra read but we are using a local in-process database anyway
+            // and it is safer to get the data again to be sure we have got the right user and the ID, the extra call has nearly zero boundary-crossing latency, it's fine
+            dao.findByID(userId)
+        }
+            ?: throw AppException("Unexpected user ID provided, this user does not exist, please contact an administrator or try again")
 
+        val isCorrectPassword = comparePassword(oldPassword, user.password)
+        if (isCorrectPassword.not()) throw AppException("Incorrect current password provided, please try again")
+
+        val success = withContext(dispatcher) {
+            user.id?.let {
+                dao.updatePassword(it, hashPassword(newPassword))
+                true
+            }
+
+            false
+        }
+
+        if (success.not()) throw AppException("Failed to update password for ${user.email}, please try again")
     }
 
     fun createDefaultAdmin() {

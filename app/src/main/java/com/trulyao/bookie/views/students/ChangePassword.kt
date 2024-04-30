@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,15 +26,19 @@ import androidx.compose.ui.unit.dp
 import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.ProtectedView
 import com.trulyao.bookie.components.TextInput
+import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.controllers.mockUser
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
+import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
 import com.trulyao.bookie.lib.handleException
+import kotlinx.coroutines.launch
 
 @Composable
 fun ChangePassword(user: User, scrollState: ScrollState = rememberScrollState()) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -41,9 +46,17 @@ fun ChangePassword(user: User, scrollState: ScrollState = rememberScrollState())
 
     var isLoading by remember { mutableStateOf(false) }
 
-    fun changePassword() {
+    suspend fun handleChangePassword() {
         try {
             isLoading = true
+                UserController
+                    .getInstance(AppDatabase.getInstance(context).userDao())
+                    .changePassword(
+                        userId = user.id ?: 0,
+                        oldPassword = currentPassword,
+                        newPassword = newPassword,
+                        confirmPassword = confirmNewPassword
+                    )
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
@@ -94,7 +107,7 @@ fun ChangePassword(user: User, scrollState: ScrollState = rememberScrollState())
 
             LoadingButton(
                 isLoading = isLoading,
-                onClick = { /*TODO*/ },
+                onClick = { scope.launch { handleChangePassword() } },
                 horizontalArrangement = Arrangement.End
             ) {
                 Text("Continue")
