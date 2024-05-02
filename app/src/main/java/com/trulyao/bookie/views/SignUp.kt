@@ -127,6 +127,7 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 onChange = { firstName = it },
                 placeholderText = "John",
                 keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
                     capitalization = KeyboardCapitalization.Words,
                     imeAction = ImeAction.Next
                 )
@@ -138,6 +139,7 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 onChange = { lastName = it },
                 placeholderText = "Doe",
                 keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
                     capitalization = KeyboardCapitalization.Words,
                     imeAction = ImeAction.Next
                 )
@@ -161,7 +163,7 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 placeholderText = "******",
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
+                    keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Next
                 )
             )

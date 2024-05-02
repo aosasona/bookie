@@ -37,7 +37,6 @@ import com.trulyao.bookie.lib.Store
 import com.trulyao.bookie.lib.StoreKey
 import com.trulyao.bookie.lib.handleException
 import com.trulyao.bookie.ui.theme.BookieTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
@@ -54,7 +53,6 @@ fun SignIn(navigateToSignUp: () -> Unit) {
             isLoading = true
             val userRepo = UserController.getInstance(
                 AppDatabase.getInstance(context).userDao(),
-                Dispatchers.IO
             )
             val user = userRepo.signIn(email, password)
             Store.set(context, StoreKey.CurrentUserID, user.id)
@@ -106,6 +104,10 @@ fun SignIn(navigateToSignUp: () -> Unit) {
                 onChange = { password = it },
                 placeholderText = "******",
                 visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                )
             )
         }
 
