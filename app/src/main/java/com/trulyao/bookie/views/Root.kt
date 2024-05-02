@@ -107,9 +107,15 @@ fun Root(
                         }
 
                         composable(userRoute(UserRoutes.Profile)) {
-                            Profile(user = user!!, navigateToSignIn = {
-                                navController.navigate(SharedRoutes.SignIn.name)
-                            })
+                            Profile(
+                                user = user!!,
+                                navigateToSignIn = {
+                                    navController.navigate(SharedRoutes.SignIn.name)
+                                },
+                                navigateToPasswordChange = {
+                                    navController.toUserView(UserRoutes.ChangePassword)
+                                }
+                            )
                         }
 
                         composable(userRoute(UserRoutes.ChangePassword)) {

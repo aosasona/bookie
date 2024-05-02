@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 fun Profile(
     user: User,
     navigateToSignIn: () -> Unit,
+    navigateToPasswordChange: () -> Unit,
     viewModel: ProfileViewModel = ProfileViewModel(user),
     scrollState: ScrollState = rememberScrollState(),
 ) {
@@ -121,14 +122,15 @@ fun Profile(
             HorizontalDivider()
 
             Surface(
+                onClick = { navigateToPasswordChange() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 20.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(vertical = 16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Key,
@@ -172,7 +174,7 @@ fun ProfilePreview() {
             BottomAppBar { UserBottomNavigationBar(navController = navController) }
         }
     ) { it ->
-        Profile(user = mockUser(Role.Student), navigateToSignIn = {})
+        Profile(user = mockUser(Role.Student), navigateToSignIn = {}, navigateToPasswordChange = {})
         Box(modifier = Modifier.padding(it))
     }
 }
