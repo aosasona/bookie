@@ -117,6 +117,10 @@ class UserController private constructor(
         newPassword: String,
         confirmPassword: String,
     ) {
+        if (oldPassword.isEmpty() && newPassword.isEmpty() && confirmPassword.isEmpty()) {
+            throw AppException("All fields are required!")
+        }
+
         if (newPassword != confirmPassword) throw AppException("New password is not the same as the password confirmation")
         val user = withContext(dispatcher) {
             // We could just pass in the whole user context instead of this extra read but we are using a local in-process database anyway
