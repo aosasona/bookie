@@ -53,7 +53,7 @@ fun Root(
 
     val isSignedIn by remember {
         derivedStateOf {
-            currentUserID != null && currentUserID!! > 0 && user != null
+            currentUserID != null && currentUserID != 0 && user != null
         }
     }
 
@@ -66,7 +66,12 @@ fun Root(
     BookieTheme {
         Scaffold(
             bottomBar = {
-                BottomNavBar(navController, user = user, isSignedIn = isSignedIn)
+                if (currentUserID != 0) BottomNavBar(
+                    navController,
+                    user = user,
+                    isSignedIn = isSignedIn
+                )
+                else null
             }
         ) { paddingValues ->
             Surface(
@@ -77,8 +82,16 @@ fun Root(
             ) {
                 NavHost(
                     navController = navController,
-                    startDestination = getStartDestination(user = user, isSignedIn = isSignedIn)
+                    startDestination = getStartDestination(
+                        user = user,
+                        currentUserID = currentUserID,
+                        isSignedIn = isSignedIn
+                    ),
                 ) {
+
+                    composable(SharedRoutes.LoadingScreen.name) {
+                        LoadingScreen()
+                    }
 
                     composable(SharedRoutes.SignIn.name) {
                         SignIn(
@@ -156,14 +169,16 @@ fun BottomNavBar(navController: NavController, user: User?, isSignedIn: Boolean)
     } else Unit
 }
 
-fun getStartDestination(user: User?, isSignedIn: Boolean): String {
-    return if (!isSignedIn) {
+fun getStartDestination(user: User?, currentUserID: Int?, isSignedIn: Boolean): String {
+    return if (currentUserID == 0) {
+        SharedRoutes.LoadingScreen.name
+    } else if (currentUserID == null && user == null) {
         SharedRoutes.SignIn.name
     } else {
         when (user?.role) {
             Role.Student -> userRoute(UserRoutes.Home)
             Role.Admin -> adminRoute(AdminRoutes.Students)
-            null -> SharedRoutes.SignIn.name
+            null -> SharedRoutes.LoadingScreen.name
         }
     }
 }

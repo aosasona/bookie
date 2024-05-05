@@ -6,6 +6,7 @@ import androidx.navigation.NavController
 public enum class SharedRoutes {
     SignIn,
     SignUp,
+    LoadingScreen
 }
 
 public enum class UserRoutes {
