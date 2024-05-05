@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Key
@@ -25,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
@@ -62,6 +65,9 @@ fun Profile(
     val scope = rememberCoroutineScope()
 
     val state by viewModel.state.collectAsState()
+    val dob = rememberDatePickerState(
+        initialSelectedDateMillis = user.dateOfBirth.time.toLong()
+    )
 
 
     suspend fun handleSignOut() {
@@ -73,14 +79,15 @@ fun Profile(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(DEFAULT_VIEW_PADDING)
+                .padding(horizontal = DEFAULT_VIEW_PADDING)
                 .verticalScroll(scrollState)
         ) {
 
             Text(
                 "Profile",
                 style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = DEFAULT_VIEW_PADDING)
             )
 
             Spacer(modifier = Modifier.size(30.dp))
@@ -89,30 +96,31 @@ fun Profile(
                 TextInput(
                     title = "First name",
                     value = state.firstName,
-                    onChange = { state.firstName = it }
+                    onChange = { viewModel.setFirstName(it) }
                 )
 
                 TextInput(
                     title = "Last name",
                     value = state.lastName,
-                    onChange = { state.lastName = it }
+                    onChange = { viewModel.setLastName(it) }
                 )
 
                 TextInput(
                     title = "E-mail address",
                     value = state.email,
-                    onChange = { state.email = it }
+                    onChange = { viewModel.setEmail(it) }
                 )
 
                 DatePicker(
-                    state = state.dob,
+                    state = dob,
                     title = { Text("Date of birth") }
                 )
 
                 LoadingButton(
                     isLoading = state.isSaving,
                     horizontalArrangement = Arrangement.End,
-                    onClick = { /*TODO*/ }) {
+                    onClick = { scope.launch { viewModel.saveChanges(context, dob) } }
+                ) {
                     Text("Save")
                 }
             }
@@ -123,8 +131,7 @@ fun Profile(
 
             Surface(
                 onClick = { navigateToPasswordChange() },
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

@@ -12,6 +12,8 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.Period
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Base64
 import java.util.Date
@@ -24,7 +26,15 @@ data class CreateUserData(
     var dateOfBirth: Date,
     var password: String,
     var confirmPassword: String,
-)
+);
+
+data class EditableUserData(
+    var firstName: String,
+    var lastName: String,
+    var email: String,
+    var dateOfBirth: Date,
+);
+
 
 val nameRegex = Regex("^[a-zA-Z]{3,}$")
 val emailRegex = Regex("^[a-zA-Z0-9._-]+@bookie\\.ac\\.uk$")
@@ -74,20 +84,43 @@ class UserController private constructor(
         return user
     }
 
-    suspend fun signUp(data: CreateUserData, role: Role = Role.Student): Int {
+    private fun validateEditableUserData(data: EditableUserData): EditableUserData {
         data.firstName = data.firstName.trim().lowercase()
         data.lastName = data.lastName.trim().lowercase()
         data.email = data.email.trim().lowercase()
-        data.password = data.password.trim()
+
+        val dobAsLocalDate = data.dateOfBirth
+            .toInstant()
+            .atZone(ZoneId.systemDefault()).toLocalDate()
 
         if (!data.firstName.matches(nameRegex)) throw AppException("First name must be at least 3 characters and only contain alphabets")
         if (!data.lastName.matches(nameRegex)) throw AppException("Last name must be at least 3 characters and only contain alphabets")
         if (!data.email.matches(emailRegex)) throw AppException("Invalid email address provided, must only contain alphanumeric characters, ., _ and - and end with @bookie.ac.uk")
+
+        // Date must not be in the future and must be at least 12 years old
+        if (dobAsLocalDate.isAfter(LocalDate.now())) throw AppException("Date of birth cannot be in the future")
+        val age = Period.between(dobAsLocalDate, LocalDate.now()).years < 12
+        if (age) throw AppException("Date of birth must be equivalent to at least 12 years old")
+
+        return data
+    }
+
+    suspend fun signUp(data: CreateUserData, role: Role = Role.Student): Int {
+        val userData = this.validateEditableUserData(
+            EditableUserData(
+                firstName = data.firstName,
+                lastName = data.lastName,
+                email = data.email,
+                dateOfBirth = data.dateOfBirth
+            )
+        )
+
+        data.password = data.password.trim()
         if (data.password.isEmpty()) throw AppException("Password is required")
         if (data.password != data.confirmPassword) throw AppException("Passwords are not the same!")
 
         val existingUser = withContext(dispatcher) {
-            dao.findByEmail(data.email)
+            dao.findByEmail(userData.email)
         };
 
         if (existingUser != null && existingUser.id!! > 0) throw AppException("An account with this email already exists")
@@ -95,13 +128,13 @@ class UserController private constructor(
         val insertedUserID = withContext(dispatcher) {
             dao.createUser(
                 User(
-                    firstName = data.firstName,
-                    lastName = data.lastName,
-                    email = data.email,
+                    firstName = userData.firstName,
+                    lastName = userData.lastName,
+                    email = userData.email,
                     password = hashPassword(data.password),
-                    netHash = generateNetworkHash(data.firstName, data.email),
+                    netHash = generateNetworkHash(userData.firstName, userData.email),
                     role = role,
-                    dateOfBirth = data.dateOfBirth,
+                    dateOfBirth = userData.dateOfBirth,
                     createdAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
                     modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
                 )
@@ -109,6 +142,22 @@ class UserController private constructor(
         }
 
         return insertedUserID.toInt()
+    }
+
+    suspend fun updateProfile(userId: Int, data: EditableUserData) {
+        val existingUser = withContext(dispatcher) {
+            dao.findByID(userId)
+        } ?: throw AppException("Could not find an account with that user ID")
+
+        val userData = this.validateEditableUserData(data)
+
+        // Update editable fields
+        existingUser.firstName = userData.firstName
+        existingUser.lastName = userData.lastName
+        existingUser.email = userData.email
+        existingUser.dateOfBirth = userData.dateOfBirth
+
+        withContext(dispatcher) { dao.updateUser(existingUser) }
     }
 
     suspend fun changePassword(
