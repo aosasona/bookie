@@ -143,7 +143,10 @@ fun Root(
                         }
 
                         composable(adminRoute(AdminRoutes.Users)) {
-                            Users(user = user!!)
+                            Users(
+                                user = user!!,
+                                navigateToSignIn = { navController.navigate(SharedRoutes.SignIn.name) }
+                            )
                         }
 
                         composable(adminRoute(AdminRoutes.Moderation)) {

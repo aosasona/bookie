@@ -1,6 +1,7 @@
 package com.trulyao.bookie.lib
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -8,7 +9,11 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.trulyao.bookie.controllers.UserController
+import com.trulyao.bookie.daos.LikeDao
+import com.trulyao.bookie.daos.PostDao
 import com.trulyao.bookie.daos.UserDao
+import com.trulyao.bookie.entities.Like
+import com.trulyao.bookie.entities.Post
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.entities.getRoleMapping
@@ -19,13 +24,19 @@ import java.util.concurrent.Executors
 private val SHARED_THREAD_EXECUTOR = Executors.newSingleThreadExecutor()
 
 @Database(
-    version = 1,
-    entities = [User::class],
-    exportSchema = true
+    version = 3,
+    entities = [User::class, Post::class, Like::class],
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3),
+    ]
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun postDao(): PostDao
+    abstract fun likeDao(): LikeDao
 
     companion object {
         private var instance: AppDatabase? = null
@@ -45,6 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "data.db"
                 )
+                .fallbackToDestructiveMigration()
                 .addCallback(seedDatabase(context))
                 .build()
         }

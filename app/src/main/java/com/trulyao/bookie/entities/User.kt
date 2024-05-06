@@ -2,9 +2,11 @@ package com.trulyao.bookie.entities
 
 import android.content.Context
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import com.trulyao.bookie.lib.Store
 import com.trulyao.bookie.lib.StoreKey
 import java.util.Date
@@ -29,6 +31,13 @@ data class User(
 
     @ColumnInfo(name = "created_at") val createdAt: Long,
     @ColumnInfo(name = "modified_at") var modifiedAt: Long,
+)
+
+data class UserWithPosts(
+    @Embedded val user: User,
+
+    @Relation(parentColumn = "id", entityColumn = "owner_id")
+    val posts: List<Post>,
 )
 
 

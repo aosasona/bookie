@@ -6,6 +6,8 @@ import com.trulyao.bookie.daos.UserDao
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.lib.AppException
+import com.trulyao.bookie.lib.emailRegex
+import com.trulyao.bookie.lib.nameRegex
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -36,9 +38,6 @@ data class EditableUserData(
 );
 
 
-val nameRegex = Regex("^[a-zA-Z]{3,}$")
-val emailRegex = Regex("^[a-zA-Z0-9._-]+@bookie\\.ac\\.uk$")
-
 class UserController private constructor(
     private val dao: UserDao,
     private val dispatcher: CoroutineDispatcher,
@@ -54,10 +53,7 @@ class UserController private constructor(
                 this.instance!!
             } else {
                 synchronized(this) {
-                    instance ?: UserController(
-                        dao,
-                        dispatcher
-                    ).also { repo -> instance = repo }
+                    instance ?: UserController(dao, dispatcher).also { repo -> instance = repo }
                 }
             }
         }
