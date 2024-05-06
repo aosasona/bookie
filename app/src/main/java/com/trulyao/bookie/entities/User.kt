@@ -28,7 +28,7 @@ data class User(
     @ColumnInfo(name = "network_name") val netHash: String, // used for network discovery and P2P instances
 
     @ColumnInfo(name = "created_at") val createdAt: Long,
-    @ColumnInfo(name = "modified_at") val modifiedAt: Long,
+    @ColumnInfo(name = "modified_at") var modifiedAt: Long,
 )
 
 

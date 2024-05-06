@@ -156,6 +156,7 @@ class UserController private constructor(
         existingUser.lastName = userData.lastName
         existingUser.email = userData.email
         existingUser.dateOfBirth = userData.dateOfBirth
+        existingUser.modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
 
         withContext(dispatcher) { dao.updateUser(existingUser) }
     }
