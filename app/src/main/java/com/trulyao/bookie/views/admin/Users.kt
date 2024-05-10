@@ -1,6 +1,8 @@
 package com.trulyao.bookie.views.admin
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +41,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.ProtectedView
 import com.trulyao.bookie.components.TextInput
 import com.trulyao.bookie.controllers.AdminController
@@ -70,6 +73,19 @@ fun Users(
     val admins = remember { mutableStateListOf<User>() }
     var currentUser: CurrentUser? by remember { mutableStateOf(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
+
+    var isSavingChanges by remember { mutableStateOf(false) }
+
+    suspend fun saveChanges() {
+        try {
+            isSavingChanges = true
+            // TODO: implement
+        } catch (e: Exception) {
+            handleException(context, e)
+        } finally {
+            isSavingChanges = false
+        }
+    }
 
     suspend fun handleSignOut() {
         signOut(context)
@@ -185,24 +201,43 @@ fun Users(
                     ModalBottomSheet(
                         onDismissRequest = { showBottomSheet = false },
                         sheetState = sheetState,
+                        modifier = Modifier
+                            .fillMaxSize()
                     ) {
-                        Box(
-                            modifier = Modifier.padding(DEFAULT_VIEW_PADDING)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(18.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = DEFAULT_VIEW_PADDING)
                         ) {
                             Text(
                                 "Edit",
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = DEFAULT_VIEW_PADDING)
+                                modifier = Modifier.padding(top = 10.dp)
                             )
-
-                            Spacer(modifier = Modifier.size(32.dp))
 
                             TextInput(
                                 title = "First name",
                                 value = currentUser?.firstName?.value ?: "",
                                 onChange = { currentUser?.let { u -> u.firstName.value = it } }
                             )
+
+                            TextInput(
+                                title = "Last name",
+                                value = currentUser?.lastName?.value ?: "",
+                                onChange = { currentUser?.let { u -> u.lastName.value = it } }
+                            )
+
+                            Spacer(modifier = Modifier.size(10.dp))
+
+                            LoadingButton(
+                                isLoading = isSavingChanges,
+                                horizontalArrangement = Arrangement.End,
+                                onClick = { scope.launch { saveChanges() } }
+                            ) {
+                                Text("Save")
+                            }
                         }
                     }
                 }

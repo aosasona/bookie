@@ -21,7 +21,7 @@ interface BottomNavigationBarItem {
 
 @Composable
 fun GenericBottomNavigationBar(navController: NavController, tabs: List<BottomNavigationBarItem>) {
-    var currentTabRoute by remember { mutableStateOf(UserBottomBarItem.Home.route) }
+    var currentTabRoute by remember { mutableStateOf(tabs.get(0).route) }
     val selectedIdx by remember {
         derivedStateOf { tabs.indexOfFirst { it.route == currentTabRoute } }
     }
