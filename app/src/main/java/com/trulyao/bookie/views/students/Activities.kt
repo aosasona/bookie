@@ -6,7 +6,7 @@ import com.trulyao.bookie.components.ProtectedView
 import com.trulyao.bookie.entities.User
 
 @Composable
-fun Activities(user: User) {
+fun Activities(user: User?) {
     ProtectedView(user = user) {
         Text("Activities")
     }

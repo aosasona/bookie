@@ -25,12 +25,12 @@ data class ProfileViewState(
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
-class ProfileViewModel(val user: User) : ViewModel() {
+class ProfileViewModel(val user: User?) : ViewModel() {
     private val _uiState = MutableStateFlow(
         ProfileViewState(
-            firstName = user.firstName,
-            lastName = user.lastName,
-            email = user.email,
+            firstName = user?.firstName ?: "",
+            lastName = user?.lastName ?: "",
+            email = user?.email ?: "",
         )
     )
 
@@ -79,7 +79,7 @@ class ProfileViewModel(val user: User) : ViewModel() {
 
             UserController
                 .getInstance(context.getDatabase().userDao())
-                .updateProfile(user.id ?: 0, data)
+                .updateProfile(user?.id ?: 0, data)
 
             Toast.makeText(context, "Profile updated!", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {

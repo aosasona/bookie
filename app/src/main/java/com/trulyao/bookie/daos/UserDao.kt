@@ -18,8 +18,11 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE id = :id LIMIT 1")
     fun findByID(id: Int): User?
 
-    @Query("SELECT * FROM users WHERE role = 2")
+    @Query("SELECT * FROM users WHERE role IN (2, 3)")
     fun getAdminUsers(): List<User>
+
+    @Query("SELECT * FROM users WHERE role = 1")
+    fun getStudentUsers(): List<User>
 
     @Query("UPDATE users SET password = :newPassword WHERE id = :userId")
     fun updatePassword(userId: Int, newPassword: String)

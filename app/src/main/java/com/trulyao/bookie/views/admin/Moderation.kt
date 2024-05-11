@@ -7,8 +7,8 @@ import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 
 @Composable
-fun Moderation(user: User) {
-    ProtectedView(user = user, allow = listOf(Role.Admin)) {
+fun Moderation(user: User?) {
+    ProtectedView(user = user, allow = listOf(Role.Admin, Role.SuperAdmin)) {
         Text("Admin Moderation")
     }
 }

@@ -20,6 +20,8 @@ public enum class AdminRoutes {
     Moderation,
     Students,
     Users,
+    Profile,
+    ChangePassword
 }
 
 fun userRoute(route: UserRoutes): String {

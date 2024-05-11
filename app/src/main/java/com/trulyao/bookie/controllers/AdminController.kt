@@ -31,8 +31,12 @@ class AdminController private constructor(
         }
     }
 
-    suspend fun getAdminUsers(): List<User> {
+    suspend fun getAdmins(): List<User> {
         return withContext(dispatcher) { dao.getAdminUsers() }
+    }
+
+    suspend fun getStudents(): List<User> {
+        return withContext(dispatcher) { dao.getStudentUsers() }
     }
 
     suspend fun updateAdminProfile(

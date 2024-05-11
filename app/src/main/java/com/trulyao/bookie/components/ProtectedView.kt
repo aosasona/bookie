@@ -14,13 +14,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProtectedView(
     context: Context = LocalContext.current,
-    user: User,
+    user: User?,
     allow: List<Role> = listOf(Role.Student),
     scope: CoroutineScope = rememberCoroutineScope(),
     child: @Composable () -> Unit,
 ) {
     LaunchedEffect(true) {
-        if (!allow.contains(user.role)) {
+        if (user == null || !allow.contains(user.role)) {
             scope.launch {
                 signOut(context)
             }
