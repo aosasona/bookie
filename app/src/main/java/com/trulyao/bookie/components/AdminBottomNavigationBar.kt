@@ -1,7 +1,7 @@
 package com.trulyao.bookie.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.SupervisedUserCircle
 import androidx.compose.runtime.Composable
@@ -17,9 +17,6 @@ sealed class AdminBottomBarItem(
     override val title: String,
     override val icon: ImageVector,
 ) : BottomNavigationBarItem {
-    data object Students :
-        UserBottomBarItem(adminRoute(AdminRoutes.Students), "Manage Students", Icons.Default.School)
-
     data object Moderation :
         UserBottomBarItem(adminRoute(AdminRoutes.Moderation), "Moderation", Icons.Default.Shield)
 
@@ -28,12 +25,18 @@ sealed class AdminBottomBarItem(
         "Users",
         Icons.Default.SupervisedUserCircle
     )
+
+    data object Profile : UserBottomBarItem(
+        adminRoute(AdminRoutes.Profile),
+        "Me",
+        Icons.Default.Person
+    )
 }
 
 private val tabs = listOf(
-    AdminBottomBarItem.Students,
     AdminBottomBarItem.Moderation,
     AdminBottomBarItem.Users,
+    AdminBottomBarItem.Profile,
 )
 
 @Composable

@@ -14,6 +14,7 @@ import java.util.Date
 enum class Role {
     Student,
     Admin,
+    SuperAdmin,
 }
 
 
@@ -41,12 +42,12 @@ data class UserWithPosts(
 )
 
 
-fun getRoleMapping(): HashMap<Role, Int> {
-    val roleMapping = HashMap<Role, Int>();
-    roleMapping[Role.Student] = 1
-    roleMapping[Role.Admin] = 2
-
-    return roleMapping
+fun getRoleValue(role: Role): Int {
+    return when (role) {
+        Role.Student -> 1
+        Role.Admin -> 2
+        Role.SuperAdmin -> 3
+    }
 }
 
 suspend fun signOut(context: Context) {

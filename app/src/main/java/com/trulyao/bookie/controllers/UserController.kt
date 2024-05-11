@@ -178,16 +178,11 @@ class UserController private constructor(
         val isCorrectPassword = comparePassword(oldPassword, user.password)
         if (isCorrectPassword.not()) throw AppException("Incorrect current password provided, please try again")
 
-        val success = withContext(dispatcher) {
+        withContext(dispatcher) {
             user.id?.let {
                 dao.updatePassword(it, hashPassword(newPassword))
-                true
             }
-
-            false
         }
-
-        if (success.not()) throw AppException("Failed to update password for ${user.email}, please try again")
     }
 
     fun createDefaultAdmin() {
@@ -197,8 +192,8 @@ class UserController private constructor(
                 lastName = "blake",
                 email = "jb@bookie.ac.uk",
                 password = this.hashPassword("Admin123"),
-                role = Role.Admin,
-                netHash = generateNetworkHash("Julian", "jb@bookie.ac.uk"),
+                role = Role.SuperAdmin,
+                netHash = generateNetworkHash("Julian", "jb@bookie.ac.uk"), // TO BE USED FOR FUTURE P2P NETWORKING
                 dateOfBirth = Date.from(
                     LocalDate.of(1990, 8, 21)
                         .atStartOfDay()

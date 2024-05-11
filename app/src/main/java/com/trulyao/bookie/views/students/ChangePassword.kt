@@ -36,7 +36,7 @@ import com.trulyao.bookie.lib.handleException
 import kotlinx.coroutines.launch
 
 @Composable
-fun ChangePassword(user: User, scrollState: ScrollState = rememberScrollState()) {
+fun ChangePassword(user: User?, scrollState: ScrollState = rememberScrollState()) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -52,7 +52,7 @@ fun ChangePassword(user: User, scrollState: ScrollState = rememberScrollState())
             UserController
                 .getInstance(context.getDatabase().userDao())
                 .changePassword(
-                    userId = user.id ?: 0,
+                    userId = user?.id ?: 0,
                     oldPassword = currentPassword,
                     newPassword = newPassword,
                     confirmPassword = confirmNewPassword
@@ -64,7 +64,7 @@ fun ChangePassword(user: User, scrollState: ScrollState = rememberScrollState())
         }
     }
 
-    ProtectedView(user = user) {
+    ProtectedView(user = user, allow = Role.entries) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

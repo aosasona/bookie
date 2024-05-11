@@ -30,7 +30,6 @@ import com.trulyao.bookie.lib.StoreKey
 import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.ui.theme.BookieTheme
 import com.trulyao.bookie.views.admin.Moderation
-import com.trulyao.bookie.views.admin.Students
 import com.trulyao.bookie.views.admin.Users
 import com.trulyao.bookie.views.students.Activities
 import com.trulyao.bookie.views.students.ChangePassword
@@ -82,11 +81,7 @@ fun Root(
             ) {
                 NavHost(
                     navController = navController,
-                    startDestination = getStartDestination(
-                        user = user,
-                        currentUserID = currentUserID,
-                        isSignedIn = isSignedIn
-                    ),
+                    startDestination = getStartDestination(user = user, currentUserID = currentUserID),
                 ) {
 
                     composable(SharedRoutes.LoadingScreen.name) {
@@ -112,16 +107,16 @@ fun Root(
                     // Student routes
                     if (user?.role == Role.Student) {
                         composable(userRoute(UserRoutes.Home)) {
-                            Home(user = user!!)
+                            Home(user = user)
                         }
 
                         composable(userRoute(UserRoutes.Activities)) {
-                            Activities(user = user!!)
+                            Activities(user = user)
                         }
 
                         composable(userRoute(UserRoutes.Profile)) {
                             Profile(
-                                user = user!!,
+                                user = user,
                                 navigateToSignIn = {
                                     navController.navigate(SharedRoutes.SignIn.name)
                                 },
@@ -132,25 +127,30 @@ fun Root(
                         }
 
                         composable(userRoute(UserRoutes.ChangePassword)) {
-                            ChangePassword(user = user!!)
+                            ChangePassword(user = user)
                         }
                     }
 
                     // Admin routes
-                    if (user?.role == Role.Admin) {
-                        composable(adminRoute(AdminRoutes.Students)) {
-                            Students(user = user!!)
-                        }
-
+                    if (user?.role != Role.Student) {
                         composable(adminRoute(AdminRoutes.Users)) {
-                            Users(
-                                user = user!!,
-                                navigateToSignIn = { navController.navigate(SharedRoutes.SignIn.name) }
-                            )
+                            Users(user = user)
                         }
 
                         composable(adminRoute(AdminRoutes.Moderation)) {
-                            Moderation(user = user!!)
+                            Moderation(user = user)
+                        }
+
+                        composable(adminRoute(AdminRoutes.Profile)) {
+                            Profile(
+                                user = user,
+                                navigateToSignIn = { navController.navigate(SharedRoutes.SignIn.name) },
+                                navigateToPasswordChange = { navController.toAdminView(AdminRoutes.ChangePassword) }
+                            )
+                        }
+
+                        composable(adminRoute(AdminRoutes.ChangePassword)) {
+                            ChangePassword(user = user)
                         }
                     }
                 }
@@ -165,14 +165,14 @@ fun BottomNavBar(navController: NavController, user: User?, isSignedIn: Boolean)
         BottomAppBar {
             when (user?.role) {
                 Role.Student -> UserBottomNavigationBar(navController = navController)
-                Role.Admin -> AdminBottomNavigationBar(navController = navController)
+                Role.Admin, Role.SuperAdmin -> AdminBottomNavigationBar(navController = navController)
                 null -> Unit
             }
         }
     } else Unit
 }
 
-fun getStartDestination(user: User?, currentUserID: Int?, isSignedIn: Boolean): String {
+fun getStartDestination(user: User?, currentUserID: Int?): String {
     return if (currentUserID == 0) {
         SharedRoutes.LoadingScreen.name
     } else if (currentUserID == null && user == null) {
@@ -180,7 +180,8 @@ fun getStartDestination(user: User?, currentUserID: Int?, isSignedIn: Boolean): 
     } else {
         when (user?.role) {
             Role.Student -> userRoute(UserRoutes.Home)
-            Role.Admin -> adminRoute(AdminRoutes.Students)
+            Role.Admin -> adminRoute(AdminRoutes.Moderation)
+            Role.SuperAdmin -> adminRoute(AdminRoutes.Moderation)
             null -> SharedRoutes.LoadingScreen.name
         }
     }

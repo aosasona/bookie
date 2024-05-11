@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Key
@@ -36,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
@@ -55,7 +53,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Profile(
-    user: User,
+    user: User?,
     navigateToSignIn: () -> Unit,
     navigateToPasswordChange: () -> Unit,
     viewModel: ProfileViewModel = ProfileViewModel(user),
@@ -66,7 +64,7 @@ fun Profile(
 
     val state by viewModel.state.collectAsState()
     val dob = rememberDatePickerState(
-        initialSelectedDateMillis = user.dateOfBirth.time.toLong()
+        initialSelectedDateMillis = user?.dateOfBirth?.time?.toLong()
     )
 
 
@@ -75,7 +73,7 @@ fun Profile(
         navigateToSignIn()
     }
 
-    ProtectedView(user = user) {
+    ProtectedView(user = user, allow = Role.entries) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
