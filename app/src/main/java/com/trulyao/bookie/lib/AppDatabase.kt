@@ -16,7 +16,7 @@ import com.trulyao.bookie.entities.Like
 import com.trulyao.bookie.entities.Post
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
-import com.trulyao.bookie.entities.getRoleMapping
+import com.trulyao.bookie.entities.getRoleValue
 import kotlinx.coroutines.Dispatchers
 import java.util.Date
 import java.util.concurrent.Executors
@@ -24,12 +24,14 @@ import java.util.concurrent.Executors
 private val SHARED_THREAD_EXECUTOR = Executors.newSingleThreadExecutor()
 
 @Database(
-    version = 3,
+    version = 5,
     entities = [User::class, Post::class, Like::class],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5),
     ]
 )
 @TypeConverters(Converters::class)
@@ -89,8 +91,8 @@ class Converters {
 
     @TypeConverter
     fun fromInt(value: Int): Role {
-        for (item in getRoleMapping()) {
-            if (item.value == value) return item.key
+        for (role in Role.entries) {
+            if (getRoleValue(role) == value) return role
         }
 
         throw AppException("Invalid value provided for role mapping")
@@ -98,7 +100,11 @@ class Converters {
 
     @TypeConverter
     fun roleToInt(role: Role): Int {
-        return getRoleMapping()[role] ?: throw AppException("Invalid role provided")
+        for (r in Role.entries) {
+            if (r == role) return getRoleValue(role)
+        }
+
+        throw AppException("Invalid role provided")
     }
 
 }

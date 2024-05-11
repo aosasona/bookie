@@ -12,6 +12,7 @@ data class Like(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
     @ColumnInfo(name = "user_id") val userId: Int,
     @ColumnInfo(name = "post_id") val postId: Int,
+    @ColumnInfo(name = "is_dislike", defaultValue = "false") val isDislike: Boolean = false,
     @ColumnInfo(name = "created_at") val createdAt: Long,
 )
 
