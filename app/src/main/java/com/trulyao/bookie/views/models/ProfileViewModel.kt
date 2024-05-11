@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import com.trulyao.bookie.controllers.EditableUserData
 import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.entities.User
-import com.trulyao.bookie.lib.AppDatabase
+import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -78,7 +78,7 @@ class ProfileViewModel(val user: User) : ViewModel() {
             )
 
             UserController
-                .getInstance(AppDatabase.getInstance(context).userDao())
+                .getInstance(context.getDatabase().userDao())
                 .updateProfile(user.id ?: 0, data)
 
             Toast.makeText(context, "Profile updated!", Toast.LENGTH_SHORT).show()

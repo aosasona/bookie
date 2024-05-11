@@ -1,5 +1,6 @@
 package com.trulyao.bookie.views.admin
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,13 +49,15 @@ import com.trulyao.bookie.controllers.AdminController
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.entities.signOut
-import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
+import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
+import com.trulyao.bookie.lib.toMutableState
+import com.trulyao.bookie.lib.ucFirst
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 data class CurrentUser(
+    var uid: MutableState<Int>,
     var firstName: MutableState<String>,
     var lastName: MutableState<String>,
 )
@@ -79,7 +82,18 @@ fun Users(
     suspend fun saveChanges() {
         try {
             isSavingChanges = true
-            // TODO: implement
+            currentUser.let { u ->
+                AdminController
+                    .getInstance(context.getDatabase().userDao())
+                    .updateAdminProfile(
+                        uid = u?.uid?.value,
+                        firstName = u?.firstName?.value,
+                        lastName = u?.lastName?.value
+                    )
+            }
+
+            currentUser = null
+            Toast.makeText(context, "Profile updated!", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
@@ -98,7 +112,7 @@ fun Users(
 
             admins.addAll(
                 AdminController
-                    .getInstance(AppDatabase.getInstance(context).userDao())
+                    .getInstance(context.getDatabase().userDao())
                     .getAdminUsers()
             )
         } catch (e: Exception) {
@@ -150,27 +164,16 @@ fun Users(
                         ListItem(
                             headlineContent = {
                                 Text(
-                                    text = "${
-                                        user.firstName.replaceFirstChar { fname ->
-                                            if (fname.isLowerCase()) fname.titlecase(
-                                                Locale.ROOT
-                                            ) else fname.toString()
-                                        }
-                                    } ${
-                                        user.lastName.replaceFirstChar { lname ->
-                                            if (lname.isLowerCase()) lname.titlecase(
-                                                Locale.US
-                                            ) else lname.toString()
-                                        }
-                                    }",
+                                    text = "${user.firstName.ucFirst()} ${user.lastName.ucFirst()}",
                                     modifier = Modifier.padding(start = 10.dp)
                                 )
                             },
                             trailingContent = {
                                 TextButton(onClick = {
                                     currentUser = CurrentUser(
-                                        firstName = mutableStateOf(user.firstName),
-                                        lastName = mutableStateOf(user.lastName)
+                                        uid = user.id!!.toMutableState(),
+                                        firstName = user.firstName.toMutableState(),
+                                        lastName = user.lastName.toMutableState()
                                     )
                                     showBottomSheet = true
                                 }) {

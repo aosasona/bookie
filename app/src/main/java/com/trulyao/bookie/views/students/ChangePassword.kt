@@ -30,8 +30,8 @@ import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.controllers.mockUser
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
-import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
+import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
 import kotlinx.coroutines.launch
 
@@ -49,14 +49,14 @@ fun ChangePassword(user: User, scrollState: ScrollState = rememberScrollState())
     suspend fun handleChangePassword() {
         try {
             isLoading = true
-                UserController
-                    .getInstance(AppDatabase.getInstance(context).userDao())
-                    .changePassword(
-                        userId = user.id ?: 0,
-                        oldPassword = currentPassword,
-                        newPassword = newPassword,
-                        confirmPassword = confirmNewPassword
-                    )
+            UserController
+                .getInstance(context.getDatabase().userDao())
+                .changePassword(
+                    userId = user.id ?: 0,
+                    oldPassword = currentPassword,
+                    newPassword = newPassword,
+                    confirmPassword = confirmNewPassword
+                )
         } catch (e: Exception) {
             handleException(context, e)
         } finally {

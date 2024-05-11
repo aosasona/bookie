@@ -25,9 +25,9 @@ import com.trulyao.bookie.components.AdminBottomNavigationBar
 import com.trulyao.bookie.components.UserBottomNavigationBar
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
-import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.Store
 import com.trulyao.bookie.lib.StoreKey
+import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.ui.theme.BookieTheme
 import com.trulyao.bookie.views.admin.Moderation
 import com.trulyao.bookie.views.admin.Students
@@ -59,7 +59,7 @@ fun Root(
 
     LaunchedEffect(currentUserID) {
         withContext(Dispatchers.IO) {
-            user = AppDatabase.getInstance(context).userDao().findByID(currentUserID ?: 0)
+            user = context.getDatabase().userDao().findByID(currentUserID ?: 0)
         }
     }
 
