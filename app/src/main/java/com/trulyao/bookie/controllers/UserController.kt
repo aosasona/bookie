@@ -185,6 +185,12 @@ class UserController private constructor(
         }
     }
 
+    suspend fun deleteUser(userId: Int) {
+        withContext(dispatcher) {
+            dao.deleteByID(userId)
+        }
+    }
+
     fun createDefaultAdmin() {
         dao.createUser(
             User(

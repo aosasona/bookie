@@ -109,10 +109,7 @@ fun Profile(
                     onChange = { viewModel.setEmail(it) }
                 )
 
-                DatePicker(
-                    state = dob,
-                    title = { Text("Date of birth") }
-                )
+                DatePicker(state = dob, title = { Text("Date of birth") })
 
                 LoadingButton(
                     isLoading = state.isSaving,

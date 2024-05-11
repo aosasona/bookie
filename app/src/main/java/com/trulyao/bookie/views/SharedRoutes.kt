@@ -20,6 +20,7 @@ enum class AdminRoutes {
     Moderation,
     Users,
     Profile,
+    CreateUser,
     ChangePassword
 }
 

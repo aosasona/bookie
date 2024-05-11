@@ -1,6 +1,7 @@
 package com.trulyao.bookie.controllers
 
 import com.trulyao.bookie.daos.UserDao
+import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.lib.AppException
 import com.trulyao.bookie.lib.nameRegex
@@ -66,5 +67,17 @@ class AdminController private constructor(
         withContext(dispatcher) {
             dao.updateUser(user)
         }
+    }
+
+    suspend fun createUser(admin: User?, newUser: User) {
+        if (admin == null) {
+            throw AppException("Admin user is required")
+        }
+
+        // Check admin permissions to create this user
+        if (admin.role != Role.SuperAdmin && newUser.role != Role.Student) {
+            throw AppException("You do not have permission to create a privileged user")
+        }
+
     }
 }

@@ -29,6 +29,7 @@ import com.trulyao.bookie.lib.Store
 import com.trulyao.bookie.lib.StoreKey
 import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.ui.theme.BookieTheme
+import com.trulyao.bookie.views.admin.CreateUser
 import com.trulyao.bookie.views.admin.Moderation
 import com.trulyao.bookie.views.admin.Users
 import com.trulyao.bookie.views.students.Activities
@@ -134,7 +135,7 @@ fun Root(
                     // Admin routes
                     if (user?.role != Role.Student) {
                         composable(adminRoute(AdminRoutes.Users)) {
-                            Users(user = user)
+                            Users(user = user, navigateToCreateUser = { navController.toAdminView(AdminRoutes.CreateUser) })
                         }
 
                         composable(adminRoute(AdminRoutes.Moderation)) {
@@ -151,6 +152,10 @@ fun Root(
 
                         composable(adminRoute(AdminRoutes.ChangePassword)) {
                             ChangePassword(user = user)
+                        }
+
+                        composable(adminRoute(AdminRoutes.CreateUser)) {
+                            CreateUser(user = user, navigateToUsersScreen = { navController.toAdminView(AdminRoutes.Users) })
                         }
                     }
                 }

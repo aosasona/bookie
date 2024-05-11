@@ -18,6 +18,9 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE id = :id LIMIT 1")
     fun findByID(id: Int): User?
 
+    @Query("DELETE FROM users WHERE id = :id")
+    fun deleteByID(id: Int)
+
     @Query("SELECT * FROM users WHERE role IN (2, 3)")
     fun getAdminUsers(): List<User>
 

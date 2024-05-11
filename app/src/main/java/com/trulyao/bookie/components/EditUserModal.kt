@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +25,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.trulyao.bookie.controllers.AdminController
+import com.trulyao.bookie.entities.Role
+import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
 import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
@@ -33,6 +37,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditUserModal(
+    user: User?,
     context: Context = LocalContext.current,
     isOpen: Boolean,
     sheetState: SheetState,
@@ -40,6 +45,8 @@ fun EditUserModal(
     scope: CoroutineScope,
     exitEditState: () -> Unit,
 ) {
+    val dob = rememberDatePickerState()
+    var password by remember { mutableStateOf("") }
     var isSavingChanges by remember { mutableStateOf(false) }
 
     suspend fun saveChanges() {
@@ -94,6 +101,17 @@ fun EditUserModal(
                     value = currentUser.lastName.value,
                     onChange = { currentUser.lastName.value = it }
                 )
+
+                // We only want to allow edits to these fields if the admin is a super admin or the target user is a student; which is accessible to everyone
+                if (user?.role == Role.SuperAdmin || currentUser.role.value == Role.Student) {
+                    TextInput(title = "E-mail address", value = currentUser.email.value, onChange = { currentUser.email.value = it })
+
+                    Column {
+                        TextInput(title = "Password", value = password, onChange = { password = it })
+                    }
+
+                    DatePicker(state = dob, title = { Text("Date of birth") })
+                }
 
                 Spacer(modifier = Modifier.size(10.dp))
 
