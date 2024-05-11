@@ -43,7 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         private var instance: AppDatabase? = null
 
-        public fun getInstance(context: Context): AppDatabase {
+        fun getInstance(context: Context): AppDatabase {
             return if (this.instance != null) {
                 this.instance!!
             } else {
@@ -86,7 +86,7 @@ class Converters {
 
     @TypeConverter
     fun dateToTimestamp(value: Date): Long {
-        return value.time.toLong()
+        return value.time
     }
 
     @TypeConverter

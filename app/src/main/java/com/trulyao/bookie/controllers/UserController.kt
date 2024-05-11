@@ -28,14 +28,14 @@ data class CreateUserData(
     var dateOfBirth: Date,
     var password: String,
     var confirmPassword: String,
-);
+)
 
 data class EditableUserData(
     var firstName: String,
     var lastName: String,
     var email: String,
     var dateOfBirth: Date,
-);
+)
 
 
 class UserController private constructor(
@@ -70,7 +70,7 @@ class UserController private constructor(
         if (password.trim().isEmpty()) throw AppException("Password is required")
 
         val user = withContext(dispatcher) {
-            dao.findByEmail(email.trim()) ?: throw AppException("Account not found");
+            dao.findByEmail(email.trim()) ?: throw AppException("Account not found")
         }
 
         if (comparePassword(password = password, hashedPassword = user.password).not()) {
@@ -117,7 +117,7 @@ class UserController private constructor(
 
         val existingUser = withContext(dispatcher) {
             dao.findByEmail(userData.email)
-        };
+        }
 
         if (existingUser != null && existingUser.id!! > 0) throw AppException("An account with this email already exists")
 
@@ -235,7 +235,7 @@ class UserController private constructor(
             .getEncoder()
             .encodeToString("${timestamp}_${firstName}_${emailWithoutSuffix}".toByteArray())
 
-        return hashStr.replace(Regex("[^a-zA-Z0-9_]"), "").substring(0, 16);
+        return hashStr.replace(Regex("[^a-zA-Z0-9_]"), "").substring(0, 16)
     }
 }
 

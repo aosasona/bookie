@@ -69,7 +69,7 @@ fun Users(user: User?) {
     }
 
     fun enterEditState(user: User?) {
-        if (user?.id == null) return;
+        if (user?.id == null) return
 
         currentUser = CurrentUser(
             uid = user.id.toMutableState(),

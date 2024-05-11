@@ -57,11 +57,11 @@ class AdminController private constructor(
         }
 
         val user = withContext(dispatcher) {
-            dao.findByID(id = uid!!)
+            dao.findByID(id = uid)
         } ?: throw AppException("Invalid User ID")
 
-        user.firstName = firstName!!
-        user.lastName = lastName!!
+        user.firstName = firstName
+        user.lastName = lastName
 
         withContext(dispatcher) {
             dao.updateUser(user)

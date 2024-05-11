@@ -64,7 +64,7 @@ fun Profile(
 
     val state by viewModel.state.collectAsState()
     val dob = rememberDatePickerState(
-        initialSelectedDateMillis = user?.dateOfBirth?.time?.toLong()
+        initialSelectedDateMillis = user?.dateOfBirth?.time
     )
 
 

@@ -85,13 +85,13 @@ fun EditUserModal(
 
                 TextInput(
                     title = "First name",
-                    value = currentUser.firstName?.value ?: "",
+                    value = currentUser.firstName.value,
                     onChange = { currentUser.firstName.value = it }
                 )
 
                 TextInput(
                     title = "Last name",
-                    value = currentUser.lastName?.value ?: "",
+                    value = currentUser.lastName.value,
                     onChange = { currentUser.lastName.value = it }
                 )
 

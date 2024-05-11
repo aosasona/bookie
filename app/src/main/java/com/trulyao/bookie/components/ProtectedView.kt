@@ -27,5 +27,5 @@ fun ProtectedView(
         }
     }
 
-    return child();
+    return child()
 }

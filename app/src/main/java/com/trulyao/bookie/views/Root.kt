@@ -70,7 +70,7 @@ fun Root(
                     user = user,
                     isSignedIn = isSignedIn
                 )
-                else null
+                else Unit
             }
         ) { paddingValues ->
             Surface(
