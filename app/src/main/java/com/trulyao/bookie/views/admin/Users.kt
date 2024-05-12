@@ -98,9 +98,10 @@ fun Users(user: User?, navigateToCreateUser: () -> Unit) {
         showBottomSheet = true
     }
 
-    fun exitEditState() {
+    suspend fun exitEditState() {
         currentUser = null
         showBottomSheet = false
+        loadUsers()
     }
 
     fun showDeleteDialog(target: User?) {
@@ -216,8 +217,7 @@ fun Users(user: User?, navigateToCreateUser: () -> Unit) {
                 isOpen = showBottomSheet,
                 sheetState = sheetState,
                 currentUser = currentUser,
-                exitEditState = { exitEditState() },
-                reload = { scope.launch { loadUsers() } }
+                exitEditState = { scope.launch { exitEditState() } },
             )
         }
     }

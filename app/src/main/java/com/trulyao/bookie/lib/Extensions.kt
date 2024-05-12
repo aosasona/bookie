@@ -19,6 +19,7 @@ fun User.toCurrentUser(): CurrentUser {
         lastName = this.lastName.toMutableState(),
         email = this.email.toMutableState(),
         role = mutableStateOf(this.role),
+        dateOfBirth = this.dateOfBirth,
     )
 }
 

@@ -48,7 +48,6 @@ fun EditUserModal(
     sheetState: SheetState,
     currentUser: CurrentUser?,
     scope: CoroutineScope,
-    reload: () -> Unit,
     exitEditState: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
@@ -70,7 +69,7 @@ fun EditUserModal(
                         firstName = u?.firstName?.value ?: "",
                         lastName = u?.lastName?.value ?: "",
                         email = u?.email?.value ?: "",
-                        dateOfBirth = if (dob.selectedDateMillis != null) Date(dob.selectedDateMillis!!) else null,
+                        dateOfBirth = Date(dob.selectedDateMillis ?: currentUser!!.dateOfBirth.time),
                     )
                 )
 

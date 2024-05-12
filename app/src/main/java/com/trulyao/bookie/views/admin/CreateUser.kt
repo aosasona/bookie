@@ -64,7 +64,7 @@ fun CreateUser(user: User?, navigateToUsersScreen: () -> Unit) {
     val generatedEmail by remember {
         derivedStateOf {
             if (firstName.isNotEmpty() && lastName.isNotEmpty()) {
-                "${firstName.lowercase()}.${lastName.lowercase()}@bookie.ac.uk"
+                "${firstName.lowercase().trim()}.${lastName.lowercase().trim()}@bookie.ac.uk"
             } else {
                 ""
             }
