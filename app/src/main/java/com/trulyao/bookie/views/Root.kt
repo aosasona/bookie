@@ -32,7 +32,6 @@ import com.trulyao.bookie.ui.theme.BookieTheme
 import com.trulyao.bookie.views.admin.CreateUser
 import com.trulyao.bookie.views.admin.Moderation
 import com.trulyao.bookie.views.admin.Users
-import com.trulyao.bookie.views.students.Activities
 import com.trulyao.bookie.views.students.ChangePassword
 import com.trulyao.bookie.views.students.Home
 import com.trulyao.bookie.views.students.Profile
@@ -109,10 +108,6 @@ fun Root(
                     if (user?.role == Role.Student) {
                         composable(userRoute(UserRoutes.Home)) {
                             Home(user = user)
-                        }
-
-                        composable(userRoute(UserRoutes.Activities)) {
-                            Activities(user = user)
                         }
 
                         composable(userRoute(UserRoutes.Profile)) {
