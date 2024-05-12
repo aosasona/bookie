@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,10 +38,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.ProtectedView
+import com.trulyao.bookie.entities.Post
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
 import com.trulyao.bookie.lib.handleException
+
+sealed interface PostMode {
+    class Edit(val post: Post) : PostMode
+    data object Create : PostMode
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +57,8 @@ fun Home(user: User?) {
     val scope = rememberCoroutineScope()
     val nestedScrollConnection = rememberNestedScrollInteropConnection()
     val pullToRefreshState = rememberPullToRefreshState()
+
+    var editorMode by remember { mutableStateOf<PostMode>(PostMode.Create) }
 
     var showNewPostModal by remember { mutableStateOf(false) }
     var isLoadingPosts by remember { mutableStateOf(true) }
@@ -99,22 +109,36 @@ fun Home(user: User?) {
                 item {
                     if (isLoadingPosts) FeedLoadingIndicator()
                 }
+
                 // Posts
             }
 
-
-            NewPostModal(isVisible = showNewPostModal, onDismiss = { showNewPostModal = false })
+            NewPostModal(isVisible = showNewPostModal, mode = editorMode, onDismiss = { showNewPostModal = false })
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewPostModal(isVisible: Boolean, onDismiss: () -> Unit) {
+fun NewPostModal(
+    isVisible: Boolean,
+    mode: PostMode,
+    onDismiss: () -> Unit,
+) {
+    var isSaving by remember { mutableStateOf(false) }
+
     if (isVisible) {
         ModalBottomSheet(onDismissRequest = onDismiss) {
             Column(modifier = Modifier.padding(DEFAULT_VIEW_PADDING)) {
-                Text("Create a post", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    TextButton(onClick = { /*TODO*/ }) {
+                        Text(text = "Cancel")
+                    }
+
+                    LoadingButton(isLoading = isSaving, onClick = { /*TODO*/ }) {
+                        Text(text = if (mode == PostMode.Create) "Post" else "Save")
+                    }
+                }
             }
         }
     }
