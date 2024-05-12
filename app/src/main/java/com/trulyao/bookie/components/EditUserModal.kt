@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -24,7 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.trulyao.bookie.controllers.AdminController
+import com.trulyao.bookie.controllers.EditableUserData
+import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.entities.Role
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
@@ -33,6 +37,7 @@ import com.trulyao.bookie.lib.handleException
 import com.trulyao.bookie.views.models.CurrentUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,26 +48,39 @@ fun EditUserModal(
     sheetState: SheetState,
     currentUser: CurrentUser?,
     scope: CoroutineScope,
+    reload: () -> Unit,
     exitEditState: () -> Unit,
 ) {
-    val dob = rememberDatePickerState()
+    val scrollState = rememberScrollState()
+    val dob = rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
     var password by remember { mutableStateOf("") }
     var isSavingChanges by remember { mutableStateOf(false) }
 
     suspend fun saveChanges() {
         try {
             isSavingChanges = true
+
+            val controller = UserController.getInstance(context.getDatabase().userDao())
+            var toastText = "Profile"
+
             currentUser.let { u ->
-                AdminController
-                    .getInstance(context.getDatabase().userDao())
-                    .updateAdminProfile(
-                        uid = u?.uid?.value,
-                        firstName = u?.firstName?.value,
-                        lastName = u?.lastName?.value
+                controller.updateProfile(
+                    u?.uid?.value ?: 0,
+                    EditableUserData(
+                        firstName = u?.firstName?.value ?: "",
+                        lastName = u?.lastName?.value ?: "",
+                        email = u?.email?.value ?: "",
+                        dateOfBirth = if (dob.selectedDateMillis != null) Date(dob.selectedDateMillis!!) else null,
                     )
+                )
+
+                if ((user?.role == Role.SuperAdmin || u?.role?.value == Role.Student) && password.isNotEmpty()) {
+                    toastText += " and password"
+                    controller.adminUpdatePassword(u?.uid?.value ?: 0, password)
+                }
             }
 
-            Toast.makeText(context, "Profile updated!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "$toastText updated!", Toast.LENGTH_SHORT).show()
             exitEditState()
         } catch (e: Exception) {
             handleException(context, e)
@@ -82,6 +100,7 @@ fun EditUserModal(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = DEFAULT_VIEW_PADDING)
+                    .verticalScroll(scrollState)
             ) {
                 Text(
                     "Edit",
@@ -106,9 +125,7 @@ fun EditUserModal(
                 if (user?.role == Role.SuperAdmin || currentUser.role.value == Role.Student) {
                     TextInput(title = "E-mail address", value = currentUser.email.value, onChange = { currentUser.email.value = it })
 
-                    Column {
-                        TextInput(title = "Password", value = password, onChange = { password = it })
-                    }
+                    PasswordInput(title = "Password", value = password, onChange = { password = it })
 
                     DatePicker(state = dob, title = { Text("Date of birth") })
                 }
@@ -122,6 +139,8 @@ fun EditUserModal(
                 ) {
                     Text("Save")
                 }
+
+                Spacer(modifier = Modifier.size(30.dp))
             }
         }
     }

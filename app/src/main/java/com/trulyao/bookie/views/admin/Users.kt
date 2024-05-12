@@ -47,6 +47,7 @@ import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
 import com.trulyao.bookie.lib.toCurrentUser
 import com.trulyao.bookie.views.models.CurrentUser
+import kotlinx.coroutines.launch
 
 enum class ViewMode {
     Admins,
@@ -197,10 +198,16 @@ fun Users(user: User?, navigateToCreateUser: () -> Unit) {
             }
 
             if (showDeleteDialog) {
-                DeleteUserDialog(context = context, scope = scope, target = currentUser, onDismiss = {
-                    currentUser = null
-                    showDeleteDialog = false
-                })
+                DeleteUserDialog(
+                    context = context,
+                    scope = scope,
+                    target = currentUser,
+                    reload = { scope.launch { loadUsers() } },
+                    onDismiss = {
+                        currentUser = null
+                        showDeleteDialog = false
+                    }
+                )
             }
 
             EditUserModal(
@@ -209,7 +216,8 @@ fun Users(user: User?, navigateToCreateUser: () -> Unit) {
                 isOpen = showBottomSheet,
                 sheetState = sheetState,
                 currentUser = currentUser,
-                exitEditState = { exitEditState() }
+                exitEditState = { exitEditState() },
+                reload = { scope.launch { loadUsers() } }
             )
         }
     }

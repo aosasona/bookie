@@ -33,7 +33,7 @@ data class EditableUserData(
     var firstName: String,
     var lastName: String,
     var email: String,
-    var dateOfBirth: Date,
+    var dateOfBirth: Date?,
 )
 
 
@@ -85,15 +85,16 @@ class UserController private constructor(
         data.email = data.email.trim().lowercase()
 
         val dobAsLocalDate = data.dateOfBirth
-            .toInstant()
-            .atZone(ZoneId.systemDefault()).toLocalDate()
+            ?.toInstant()
+            ?.atZone(ZoneId.systemDefault())
+            ?.toLocalDate()
 
         if (!data.firstName.matches(nameRegex)) throw AppException("First name must be at least 3 characters and only contain alphabets")
         if (!data.lastName.matches(nameRegex)) throw AppException("Last name must be at least 3 characters and only contain alphabets")
         if (!data.email.matches(emailRegex)) throw AppException("Invalid email address provided, must only contain alphanumeric characters, ., _ and - and end with @bookie.ac.uk")
 
         // Date must not be in the future and must be at least 12 years old
-        if (dobAsLocalDate.isAfter(LocalDate.now())) throw AppException("Date of birth cannot be in the future")
+        if (dobAsLocalDate?.isAfter(LocalDate.now()) == true) throw AppException("Date of birth cannot be in the future")
         val age = Period.between(dobAsLocalDate, LocalDate.now()).years < 12
         if (age) throw AppException("Date of birth must be equivalent to at least 12 years old")
 
@@ -128,7 +129,7 @@ class UserController private constructor(
                     password = hashPassword(data.password),
                     netHash = generateNetworkHash(userData.firstName, userData.email),
                     role = role,
-                    dateOfBirth = userData.dateOfBirth,
+                    dateOfBirth = userData.dateOfBirth ?: Date(),
                     createdAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
                     modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
                 )
@@ -149,7 +150,7 @@ class UserController private constructor(
         existingUser.firstName = userData.firstName
         existingUser.lastName = userData.lastName
         existingUser.email = userData.email
-        existingUser.dateOfBirth = userData.dateOfBirth
+        if (userData.dateOfBirth != null) existingUser.dateOfBirth = userData.dateOfBirth ?: Date()
         existingUser.modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
 
         withContext(dispatcher) { dao.updateUser(existingUser) }
@@ -180,6 +181,14 @@ class UserController private constructor(
             user.id?.let {
                 dao.updatePassword(it, hashPassword(newPassword))
             }
+        }
+    }
+
+    suspend fun adminUpdatePassword(userId: Int, newPassword: String) {
+        if (newPassword.isEmpty()) throw AppException("New password is required")
+
+        withContext(dispatcher) {
+            dao.updatePassword(userId, hashPassword(newPassword))
         }
     }
 

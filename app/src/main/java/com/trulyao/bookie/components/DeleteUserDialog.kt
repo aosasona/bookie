@@ -1,6 +1,7 @@
 package com.trulyao.bookie.components
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -22,7 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun DeleteUserDialog(context: Context, scope: CoroutineScope, target: CurrentUser?, onDismiss: () -> Unit) {
+fun DeleteUserDialog(context: Context, scope: CoroutineScope, target: CurrentUser?, reload: () -> Unit, onDismiss: () -> Unit) {
     var isDeleting by remember { mutableStateOf(false) }
 
     suspend fun onConfirm() {
@@ -33,6 +34,9 @@ fun DeleteUserDialog(context: Context, scope: CoroutineScope, target: CurrentUse
             if (userId == 0) throw Exception("User ID is not valid")
 
             UserController.getInstance(context.getDatabase().userDao()).deleteUser(userId)
+            reload()
+
+            Toast.makeText(context, "User deleted", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
