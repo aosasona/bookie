@@ -25,11 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trulyao.bookie.components.LoadingButton
+import com.trulyao.bookie.components.PasswordInput
 import com.trulyao.bookie.components.TextInput
 import com.trulyao.bookie.controllers.UserController
 import com.trulyao.bookie.lib.Store
@@ -96,17 +96,7 @@ fun SignIn(navigateToSignUp: () -> Unit) {
                 )
             )
 
-            TextInput(
-                title = "Password",
-                value = password,
-                onChange = { password = it },
-                placeholderText = "******",
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                )
-            )
+            PasswordInput(title = "Password", value = password, onChange = { password = it }, imeAction = ImeAction.Done)
         }
 
 

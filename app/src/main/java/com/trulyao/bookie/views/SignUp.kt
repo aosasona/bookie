@@ -29,11 +29,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trulyao.bookie.components.LoadingButton
+import com.trulyao.bookie.components.PasswordInput
 import com.trulyao.bookie.components.TextInput
 import com.trulyao.bookie.controllers.CreateUserData
 import com.trulyao.bookie.controllers.UserController
@@ -59,7 +59,6 @@ fun SignUp(navigateToSignIn: () -> Unit) {
     val dob = rememberDatePickerState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
 
     suspend fun handleSignUp() {
         try {
@@ -77,7 +76,6 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 email = email,
                 dateOfBirth = Date(dob.selectedDateMillis!!),
                 password = password,
-                confirmPassword = confirmPassword
             )
 
             val createdUserId = userRepo.signUp(data)
@@ -156,29 +154,7 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 )
             )
 
-            TextInput(
-                title = "Password",
-                value = password,
-                onChange = { password = it },
-                placeholderText = "******",
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Next
-                )
-            )
-
-            TextInput(
-                title = "Confirm Password",
-                value = confirmPassword,
-                onChange = { confirmPassword = it },
-                placeholderText = "******",
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Next
-                )
-            )
+            PasswordInput(value = password, onChange = { password = it })
 
             DatePicker(
                 state = dob,

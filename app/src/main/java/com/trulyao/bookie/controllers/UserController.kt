@@ -27,7 +27,6 @@ data class CreateUserData(
     var email: String,
     var dateOfBirth: Date,
     var password: String,
-    var confirmPassword: String,
 )
 
 data class EditableUserData(
@@ -113,7 +112,6 @@ class UserController private constructor(
 
         data.password = data.password.trim()
         if (data.password.isEmpty()) throw AppException("Password is required")
-        if (data.password != data.confirmPassword) throw AppException("Passwords are not the same!")
 
         val existingUser = withContext(dispatcher) {
             dao.findByEmail(userData.email)

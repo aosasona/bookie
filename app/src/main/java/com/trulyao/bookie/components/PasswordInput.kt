@@ -24,9 +24,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun PasswordInput(
-    title: String,
+    title: String = "Password",
     value: String,
     onChange: (String) -> Unit,
+    imeAction: ImeAction = ImeAction.Next,
 ) {
     var isPasswordVisible by remember { mutableStateOf(false) }
 
@@ -37,7 +38,7 @@ fun PasswordInput(
             onChange = { onChange(it) },
             placeholderText = "******",
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = imeAction)
         )
 
         Spacer(modifier = Modifier.size(8.dp))

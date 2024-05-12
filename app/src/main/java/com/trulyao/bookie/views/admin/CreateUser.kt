@@ -64,7 +64,7 @@ fun CreateUser(user: User?, navigateToUsersScreen: () -> Unit) {
     val generatedEmail by remember {
         derivedStateOf {
             if (firstName.isNotEmpty() && lastName.isNotEmpty()) {
-                "${firstName.lowercase()}${lastName.lowercase()}@bookie.ac.uk"
+                "${firstName.lowercase()}.${lastName.lowercase()}@bookie.ac.uk"
             } else {
                 ""
             }
@@ -74,7 +74,6 @@ fun CreateUser(user: User?, navigateToUsersScreen: () -> Unit) {
     val dob = rememberDatePickerState()
     var role by remember { mutableStateOf(Role.Student) }
 
-    var showPassword by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
 
     suspend fun createUser() {
@@ -86,10 +85,9 @@ fun CreateUser(user: User?, navigateToUsersScreen: () -> Unit) {
             val data = CreateUserData(
                 firstName = firstName,
                 lastName = lastName,
-                email = email,
+                email = email.ifEmpty { generatedEmail },
                 dateOfBirth = Date(dob.selectedDateMillis!!),
                 password = password,
-                confirmPassword = password
             )
 
             val createdUserId = UserController
