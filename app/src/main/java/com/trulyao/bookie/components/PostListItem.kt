@@ -1,8 +1,8 @@
 package com.trulyao.bookie.components
 
 import androidx.compose.runtime.Composable
-import com.trulyao.bookie.entities.PostWithLikes
+import com.trulyao.bookie.entities.UserPostAndLikes
 
 @Composable
-fun PostListItem(post: PostWithLikes) {
+fun PostListItem(post: UserPostAndLikes) {
 }

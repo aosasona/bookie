@@ -27,9 +27,15 @@ data class Post(
     @ColumnInfo(name = "modified_at") var modifiedAt: Long,
 )
 
-data class PostWithLikes(
+data class UserPostAndLikes(
     @Embedded val post: Post,
 
     @Relation(parentColumn = "id", entityColumn = "post_id")
     val likes: List<Like>,
+
+    @Relation(parentColumn = "owner_id", entityColumn = "id")
+    val user: User,
+
+    @Relation(parentColumn = "id", entityColumn = "parent_id")
+    val comments: List<Post>,
 )

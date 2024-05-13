@@ -1,5 +1,7 @@
 package com.trulyao.bookie.views.students
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,10 +43,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.trulyao.bookie.components.LoadingButton
 import com.trulyao.bookie.components.ProtectedView
+import com.trulyao.bookie.controllers.PostController
 import com.trulyao.bookie.entities.Post
 import com.trulyao.bookie.entities.User
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
+import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 sealed interface PostMode {
     class Edit(val post: Post) : PostMode
@@ -113,7 +120,13 @@ fun Home(user: User?) {
                 // Posts
             }
 
-            NewPostModal(isVisible = showNewPostModal, mode = editorMode, onDismiss = { showNewPostModal = false })
+            NewPostModal(
+                user = user,
+                isVisible = showNewPostModal,
+                mode = editorMode,
+                reload = { scope.launch { loadPosts() } },
+                onDismiss = { showNewPostModal = false }
+            )
         }
     }
 }
@@ -121,24 +134,77 @@ fun Home(user: User?) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewPostModal(
+    context: Context = LocalContext.current,
+    scope: CoroutineScope = rememberCoroutineScope(),
+    user: User?,
     isVisible: Boolean,
     mode: PostMode,
     onDismiss: () -> Unit,
+    reload: () -> Unit,
 ) {
+    var content by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
+
+    suspend fun save() {
+        try {
+            isSaving = true
+            if (mode is PostMode.Create) {
+                PostController
+                    .getInstance(context.getDatabase().postDao())
+                    .createPost(context, user?.id, content)
+            } else {
+                // Update post
+            }
+
+            Toast.makeText(context, "Post saved", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            handleException(context, e)
+        } finally {
+            isSaving = false
+            reload()
+            onDismiss()
+        }
+    }
+
+    LaunchedEffect(mode) {
+        if (mode is PostMode.Edit) {
+            content = mode.post.content
+        }
+    }
 
     if (isVisible) {
         ModalBottomSheet(onDismissRequest = onDismiss) {
-            Column(modifier = Modifier.padding(DEFAULT_VIEW_PADDING)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    TextButton(onClick = { /*TODO*/ }) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .padding(DEFAULT_VIEW_PADDING)
+                    .fillMaxSize()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(onClick = {
+                        content = "";
+                        onDismiss()
+                    }) {
                         Text(text = "Cancel")
                     }
 
-                    LoadingButton(isLoading = isSaving, onClick = { /*TODO*/ }) {
+                    LoadingButton(
+                        isLoading = isSaving,
+                        enabled = content.isNotEmpty(),
+                        onClick = { scope.launch { save() } }
+                    ) {
                         Text(text = if (mode == PostMode.Create) "Post" else "Save")
                     }
                 }
+
+                TextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .fillMaxSize(),
+                    maxLines = 24,
+                )
             }
         }
     }

@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import com.trulyao.bookie.entities.Post
-import com.trulyao.bookie.entities.UserWithPosts
+import com.trulyao.bookie.entities.UserPostAndLikes
 
 @Dao
 interface LikeDao {
@@ -21,6 +21,6 @@ interface PostDao {
     fun findPostsByUserId(userId: Int): List<Post>
 
     @Transaction
-    @Query("SELECT * FROM users")
-    fun getAll(): List<UserWithPosts>
+    @Query("SELECT * FROM posts")
+    fun getAll(): List<UserPostAndLikes>
 }
