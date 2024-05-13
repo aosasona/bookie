@@ -12,7 +12,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Period
 import java.time.ZoneId
@@ -130,8 +129,8 @@ class UserController private constructor(
                     netHash = generateNetworkHash(userData.firstName, userData.email),
                     role = role,
                     dateOfBirth = userData.dateOfBirth ?: Date(),
-                    createdAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
-                    modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                    createdAt = System.currentTimeMillis(),
+                    modifiedAt = System.currentTimeMillis(),
                 )
             )
         }
@@ -151,7 +150,7 @@ class UserController private constructor(
         existingUser.lastName = userData.lastName
         existingUser.email = userData.email
         if (userData.dateOfBirth != null) existingUser.dateOfBirth = userData.dateOfBirth!!
-        existingUser.modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+        existingUser.modifiedAt = System.currentTimeMillis()
 
         withContext(dispatcher) { dao.updateUser(existingUser) }
     }
@@ -212,8 +211,8 @@ class UserController private constructor(
                         .atStartOfDay()
                         .toInstant(ZoneOffset.UTC)
                 ),
-                createdAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
-                modifiedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                createdAt = System.currentTimeMillis(),
+                modifiedAt = System.currentTimeMillis(),
             ),
         )
     }
