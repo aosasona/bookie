@@ -31,7 +31,7 @@ data class UserPostAndLikes(
     @Embedded val post: Post,
 
     @Relation(parentColumn = "id", entityColumn = "post_id")
-    val likes: List<Like>,
+    var likes: MutableList<Like>,
 
     @Relation(parentColumn = "owner_id", entityColumn = "id")
     val user: User,

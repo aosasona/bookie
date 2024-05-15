@@ -1,6 +1,7 @@
 package com.trulyao.bookie.views.students
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -28,7 +30,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,14 +42,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.trulyao.bookie.components.LoadingButton
+import com.trulyao.bookie.components.PostListItem
 import com.trulyao.bookie.components.ProtectedView
 import com.trulyao.bookie.controllers.PostController
 import com.trulyao.bookie.entities.Post
 import com.trulyao.bookie.entities.User
+import com.trulyao.bookie.entities.UserPostAndLikes
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
 import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
@@ -62,17 +67,22 @@ sealed interface PostMode {
 fun Home(user: User?) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val nestedScrollConnection = rememberNestedScrollInteropConnection()
     val pullToRefreshState = rememberPullToRefreshState()
 
-    var editorMode by remember { mutableStateOf<PostMode>(PostMode.Create) }
+    val posts = remember { mutableStateListOf<UserPostAndLikes>() }
 
+    var editorMode by remember { mutableStateOf<PostMode>(PostMode.Create) }
     var showNewPostModal by remember { mutableStateOf(false) }
     var isLoadingPosts by remember { mutableStateOf(true) }
 
     suspend fun loadPosts() {
         try {
             isLoadingPosts = true
+            val controller = PostController.getInstance(context.getDatabase().postDao())
+            val allPosts = controller.getPosts()
+            posts.clear()
+            posts.addAll(allPosts)
+            Log.i("posts", posts.toString())
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
@@ -93,6 +103,7 @@ fun Home(user: User?) {
 
     ProtectedView(user = user) {
         Scaffold(
+            modifier = Modifier.nestedScroll(pullToRefreshState.nestedScrollConnection),
             topBar = {
                 Text("Posts", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(DEFAULT_VIEW_PADDING))
             },
@@ -109,15 +120,15 @@ fun Home(user: User?) {
         ) { paddingValues ->
             LazyColumn(
                 contentPadding = paddingValues,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .nestedScroll(nestedScrollConnection),
+                modifier = Modifier.fillMaxSize()
             ) {
                 item {
                     if (isLoadingPosts) FeedLoadingIndicator()
                 }
 
-                // Posts
+                items(posts) { item ->
+                    PostListItem(item = item, user = user!!)
+                }
             }
 
             NewPostModal(
@@ -142,18 +153,20 @@ fun NewPostModal(
     onDismiss: () -> Unit,
     reload: () -> Unit,
 ) {
-    var content by remember { mutableStateOf("") }
+    var postContent by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
+    val canSave by remember { derivedStateOf { postContent.isNotBlank() && !isSaving } }
 
     suspend fun save() {
         try {
             isSaving = true
+            val controller = PostController.getInstance(context.getDatabase().postDao())
+
             if (mode is PostMode.Create) {
-                PostController
-                    .getInstance(context.getDatabase().postDao())
-                    .createPost(context, user?.id, content)
+                controller.createPost(context, user?.id, postContent)
             } else {
-                // Update post
+                val m = mode as PostMode.Edit
+                controller.updatePostContent(m.post.id, postContent)
             }
 
             Toast.makeText(context, "Post saved", Toast.LENGTH_SHORT).show()
@@ -161,6 +174,7 @@ fun NewPostModal(
             handleException(context, e)
         } finally {
             isSaving = false
+            postContent = ""
             reload()
             onDismiss()
         }
@@ -168,9 +182,10 @@ fun NewPostModal(
 
     LaunchedEffect(mode) {
         if (mode is PostMode.Edit) {
-            content = mode.post.content
+            postContent = mode.post.content
         }
     }
+
 
     if (isVisible) {
         ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -181,16 +196,10 @@ fun NewPostModal(
                     .fillMaxSize()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    TextButton(onClick = {
-                        content = "";
-                        onDismiss()
-                    }) {
-                        Text(text = "Cancel")
-                    }
-
+                    TextButton(onClick = { postContent = ""; onDismiss(); }) { Text(text = "Cancel") }
                     LoadingButton(
                         isLoading = isSaving,
-                        enabled = content.isNotEmpty(),
+                        enabled = canSave,
                         onClick = { scope.launch { save() } }
                     ) {
                         Text(text = if (mode == PostMode.Create) "Post" else "Save")
@@ -198,8 +207,8 @@ fun NewPostModal(
                 }
 
                 TextField(
-                    value = content,
-                    onValueChange = { content = it },
+                    value = postContent,
+                    onValueChange = { postContent = it },
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surface)
                         .fillMaxSize(),

@@ -25,10 +25,10 @@ data class User(
     @ColumnInfo(name = "first_name") var firstName: String,
     @ColumnInfo(name = "last_name") var lastName: String,
     @ColumnInfo(name = "email") var email: String,
-    @ColumnInfo(name = "password") val password: String,
+    @ColumnInfo(name = "password") var password: String,
     @ColumnInfo(name = "role") val role: Role,
     @ColumnInfo(name = "date_of_birth") var dateOfBirth: Date,
-    @ColumnInfo(name = "network_name") val netHash: String, // used for network discovery and P2P instances
+    @ColumnInfo(name = "network_name") var netHash: String, // used for network discovery and P2P instances
 
     @ColumnInfo(name = "created_at") val createdAt: Long,
     @ColumnInfo(name = "modified_at") var modifiedAt: Long,

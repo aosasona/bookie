@@ -54,9 +54,33 @@ class PostController private constructor(
         return insertedPostId
     }
 
+    suspend fun updatePostContent(postId: Int?, content: String) {
+        if (postId == 0 || postId == null) throw AppException("Post ID is required")
+        if (content.isBlank()) throw AppException("Content is required")
+
+        val post = withContext(dispatcher) {
+            dao.findPostById(postId)
+        } ?: throw AppException("Post does not exist")
+
+        post.content = content
+        post.modifiedAt = System.currentTimeMillis()
+
+        withContext(dispatcher) {
+            dao.updatePost(post)
+        }
+    }
+
     suspend fun getPosts(): List<UserPostAndLikes> {
-        return withContext(dispatcher) {
+        val posts = withContext(dispatcher) {
             dao.getAll()
         }
+
+        // Strip sensitive fields from the data
+        posts.forEach { post ->
+            post.user.password = ""
+            post.user.netHash = ""
+        }
+
+        return posts
     }
 }
