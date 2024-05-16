@@ -12,7 +12,7 @@ data class Like(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
     @ColumnInfo(name = "user_id") val userId: Int,
     @ColumnInfo(name = "post_id") val postId: Int,
-    @ColumnInfo(name = "is_dislike", defaultValue = "false") val isDislike: Boolean = false,
+    @ColumnInfo(name = "is_dislike", defaultValue = "false") var isDislike: Boolean = false,
     @ColumnInfo(name = "created_at") val createdAt: Long,
 )
 
@@ -27,11 +27,11 @@ data class Post(
     @ColumnInfo(name = "modified_at") var modifiedAt: Long,
 )
 
-data class UserPostAndLikes(
+data class PostWithRelations(
     @Embedded val post: Post,
 
     @Relation(parentColumn = "id", entityColumn = "post_id")
-    var likes: MutableList<Like>,
+    var likes: List<Like>,
 
     @Relation(parentColumn = "owner_id", entityColumn = "id")
     val user: User,

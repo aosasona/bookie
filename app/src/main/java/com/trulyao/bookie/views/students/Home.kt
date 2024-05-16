@@ -1,11 +1,9 @@
 package com.trulyao.bookie.views.students
 
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,15 +20,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -44,32 +38,26 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.trulyao.bookie.components.LoadingButton
+import com.trulyao.bookie.components.NewPostModal
 import com.trulyao.bookie.components.PostListItem
+import com.trulyao.bookie.components.PostMode
 import com.trulyao.bookie.components.ProtectedView
 import com.trulyao.bookie.controllers.PostController
-import com.trulyao.bookie.entities.Post
+import com.trulyao.bookie.entities.PostWithRelations
 import com.trulyao.bookie.entities.User
-import com.trulyao.bookie.entities.UserPostAndLikes
 import com.trulyao.bookie.lib.DEFAULT_VIEW_PADDING
 import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
-sealed interface PostMode {
-    class Edit(val post: Post) : PostMode
-    data object Create : PostMode
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home(user: User?) {
+fun Home(user: User?, navigateToPostDetails: (Int) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
 
-    val posts = remember { mutableStateListOf<UserPostAndLikes>() }
+    val posts = remember { mutableStateListOf<PostWithRelations>() }
 
     var editorMode by remember { mutableStateOf<PostMode>(PostMode.Create) }
     var showNewPostModal by remember { mutableStateOf(false) }
@@ -105,7 +93,13 @@ fun Home(user: User?) {
         Scaffold(
             modifier = Modifier.nestedScroll(pullToRefreshState.nestedScrollConnection),
             topBar = {
-                Text("Posts", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(DEFAULT_VIEW_PADDING))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    Text("Posts", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(DEFAULT_VIEW_PADDING))
+                }
             },
             floatingActionButton = {
                 FloatingActionButton(
@@ -127,7 +121,12 @@ fun Home(user: User?) {
                 }
 
                 items(posts) { item ->
-                    PostListItem(item = item, user = user!!)
+                    PostListItem(
+                        item = item,
+                        user = user!!,
+                        navigateToPostDetails = navigateToPostDetails,
+                        enterEditMode = { editorMode = PostMode.Edit(it); showNewPostModal = true }
+                    )
                 }
             }
 
@@ -138,83 +137,6 @@ fun Home(user: User?) {
                 reload = { scope.launch { loadPosts() } },
                 onDismiss = { showNewPostModal = false }
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun NewPostModal(
-    context: Context = LocalContext.current,
-    scope: CoroutineScope = rememberCoroutineScope(),
-    user: User?,
-    isVisible: Boolean,
-    mode: PostMode,
-    onDismiss: () -> Unit,
-    reload: () -> Unit,
-) {
-    var postContent by remember { mutableStateOf("") }
-    var isSaving by remember { mutableStateOf(false) }
-    val canSave by remember { derivedStateOf { postContent.isNotBlank() && !isSaving } }
-
-    suspend fun save() {
-        try {
-            isSaving = true
-            val controller = PostController.getInstance(context.getDatabase().postDao())
-
-            if (mode is PostMode.Create) {
-                controller.createPost(context, user?.id, postContent)
-            } else {
-                val m = mode as PostMode.Edit
-                controller.updatePostContent(m.post.id, postContent)
-            }
-
-            Toast.makeText(context, "Post saved", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            handleException(context, e)
-        } finally {
-            isSaving = false
-            postContent = ""
-            reload()
-            onDismiss()
-        }
-    }
-
-    LaunchedEffect(mode) {
-        if (mode is PostMode.Edit) {
-            postContent = mode.post.content
-        }
-    }
-
-
-    if (isVisible) {
-        ModalBottomSheet(onDismissRequest = onDismiss) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier
-                    .padding(DEFAULT_VIEW_PADDING)
-                    .fillMaxSize()
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    TextButton(onClick = { postContent = ""; onDismiss(); }) { Text(text = "Cancel") }
-                    LoadingButton(
-                        isLoading = isSaving,
-                        enabled = canSave,
-                        onClick = { scope.launch { save() } }
-                    ) {
-                        Text(text = if (mode == PostMode.Create) "Post" else "Save")
-                    }
-                }
-
-                TextField(
-                    value = postContent,
-                    onValueChange = { postContent = it },
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surface)
-                        .fillMaxSize(),
-                    maxLines = 24,
-                )
-            }
         }
     }
 }

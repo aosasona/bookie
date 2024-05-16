@@ -18,9 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.trulyao.bookie.components.AdminBottomNavigationBar
 import com.trulyao.bookie.components.UserBottomNavigationBar
 import com.trulyao.bookie.entities.Role
@@ -34,6 +36,7 @@ import com.trulyao.bookie.views.admin.Moderation
 import com.trulyao.bookie.views.admin.Users
 import com.trulyao.bookie.views.students.ChangePassword
 import com.trulyao.bookie.views.students.Home
+import com.trulyao.bookie.views.students.PostDetails
 import com.trulyao.bookie.views.students.Profile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -107,7 +110,12 @@ fun Root(
                     // Student routes
                     if (user?.role == Role.Student) {
                         composable(userRoute(UserRoutes.Home)) {
-                            Home(user = user)
+                            Home(
+                                user = user,
+                                navigateToPostDetails = { postId ->
+                                    navController.navigate(userRoute(UserRoutes.PostDetails) + "/$postId")
+                                }
+                            )
                         }
 
                         composable(userRoute(UserRoutes.Profile)) {
@@ -124,6 +132,11 @@ fun Root(
 
                         composable(userRoute(UserRoutes.ChangePassword)) {
                             ChangePassword(user = user)
+                        }
+
+                        composable(userRoute(UserRoutes.PostDetails) + "/{postId}", arguments = listOf(navArgument("postId") { type = NavType.StringType })) {
+                            val postId = it.arguments?.getString("postId")?.toIntOrNull()
+                            PostDetails(postId = postId)
                         }
                     }
 

@@ -251,8 +251,8 @@ class UserController private constructor(
     }
 }
 
-fun mockUser(role: Role) = User(
-    id = 1_000_000_000,
+fun mockUser(role: Role, userId: Int = 1_000) = User(
+    id = userId,
     firstName = "John",
     lastName = "Doe",
     email = "test@bookie.ac.uk",

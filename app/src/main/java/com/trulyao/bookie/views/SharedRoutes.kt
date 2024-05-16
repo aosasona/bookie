@@ -11,7 +11,7 @@ enum class SharedRoutes {
 
 enum class UserRoutes {
     Home,
-    Activities,
+    PostDetails,
     Profile,
     ChangePassword
 }
