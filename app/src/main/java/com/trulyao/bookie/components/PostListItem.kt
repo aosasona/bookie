@@ -68,6 +68,7 @@ enum class PostEvent {
 fun PostListItem(
     item: PostWithRelations,
     user: User,
+    reload: () -> Unit,
     navigateToPostDetails: (Int) -> Unit,
     enterEditMode: (Post) -> Unit,
 ) {
@@ -88,6 +89,21 @@ fun PostListItem(
     val isLikedByUser: Boolean by remember { derivedStateOf { userLike != null && userLike!!.isDislike.not() } }
     val isDislikedByUser: Boolean by remember { derivedStateOf { userLike != null && userLike!!.isDislike } }
 
+
+    suspend fun deletePost() {
+        try {
+            if (item.post.id == null) throw Exception("Post ID is required")
+
+            PostController
+                .getInstance(context.getDatabase().postDao())
+                .deletePost(item.post.id)
+        } catch (e: Exception) {
+            handleException(context, e)
+        } finally {
+            menuIsExpanded = false
+            reload()
+        }
+    }
 
     // Handle optimistic UI thingies
     suspend fun removeEngagement() {
@@ -189,7 +205,7 @@ fun PostListItem(
 
                             DropdownMenuItem(
                                 text = { TextIconButton(text = "Delete", icon = Icons.Default.Delete, color = Color.Red) },
-                                onClick = { /*TODO*/ }
+                                onClick = { scope.launch { deletePost() } }
                             )
                         }
                     }
@@ -295,5 +311,11 @@ fun PostListItemPreview() {
         comments = mutableListOf()
     )
 
-    PostListItem(post, mockUser(Role.Student), navigateToPostDetails = {}, enterEditMode = {})
+    PostListItem(
+        item = post,
+        user = mockUser(Role.Student),
+        navigateToPostDetails = {},
+        enterEditMode = {},
+        reload = {}
+    )
 }

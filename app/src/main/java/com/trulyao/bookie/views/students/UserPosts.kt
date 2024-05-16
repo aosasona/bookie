@@ -16,7 +16,7 @@ import com.trulyao.bookie.lib.getDatabase
 import com.trulyao.bookie.lib.handleException
 
 @Composable
-fun Home(
+fun UserPosts(
     user: User?,
     navigateToPostDetails: (Int) -> Unit,
 ) {
@@ -28,7 +28,7 @@ fun Home(
         try {
             isLoadingPosts = true
             val controller = PostController.getInstance(context.getDatabase().postDao())
-            val allPosts = controller.getPosts()
+            val allPosts = controller.getPostsByUserId(user?.id)
             posts.clear()
             posts.addAll(allPosts)
         } catch (e: Exception) {
@@ -39,16 +39,14 @@ fun Home(
         }
     }
 
-
     ProtectedView(user = user) {
         Feed(
             user = user,
             posts = posts,
             isLoadingPosts = isLoadingPosts,
-            showFab = true,
+            showFab = false,
             load = { fn -> loadPosts(fn) },
             navigateToPostDetails = navigateToPostDetails
         )
     }
 }
-

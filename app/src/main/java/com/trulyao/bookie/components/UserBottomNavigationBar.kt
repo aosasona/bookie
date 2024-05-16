@@ -2,6 +2,7 @@ package com.trulyao.bookie.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ModeComment
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -18,12 +19,16 @@ sealed class UserBottomBarItem(
 ) : BottomNavigationBarItem {
     data object Home : UserBottomBarItem(userRoute(UserRoutes.Home), "Home", Icons.Default.Home)
 
+    data object Posts :
+        UserBottomBarItem(userRoute(UserRoutes.Posts), "My Posts", Icons.Default.ModeComment)
+
     data object Profile :
         UserBottomBarItem(userRoute(UserRoutes.Profile), "Profile", Icons.Default.Person)
 }
 
 private val tabs = listOf(
     UserBottomBarItem.Home,
+    UserBottomBarItem.Posts,
     UserBottomBarItem.Profile
 )
 
