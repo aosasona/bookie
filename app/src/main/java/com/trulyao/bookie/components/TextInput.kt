@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
@@ -25,7 +25,7 @@ fun TextInput(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(title, style = MaterialTheme.typography.labelLarge)
 
-        TextField(
+        OutlinedTextField(
             value = value,
             onValueChange = onChange,
             placeholder = { if (placeholder != null) placeholder() else Text(placeholderText) },
@@ -33,6 +33,7 @@ fun TextInput(
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             maxLines = 1,
+            singleLine = true
         )
     }
 }

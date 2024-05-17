@@ -1,5 +1,6 @@
 package com.trulyao.bookie.components
 
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,9 +69,11 @@ enum class PostEvent {
 @Composable
 fun PostListItem(
     item: PostWithRelations,
-    user: User,
-    reload: () -> Unit,
-    navigateToPostDetails: (Int) -> Unit,
+    user: User?,
+    onDelete: () -> Unit,
+    showFullDetails: Boolean = false,
+    isComment: Boolean = false,
+    navigateToPostDetails: ((Int) -> Unit) = {},
     enterEditMode: (Post) -> Unit,
 ) {
     val context = LocalContext.current
@@ -83,11 +87,19 @@ fun PostListItem(
         likes.addAll(item.likes)
     }
 
-    val userLike by remember { derivedStateOf { likes.find { i -> i.userId == user.id } } }
+    val userLike by remember { derivedStateOf { likes.find { i -> i.userId == user?.id } } }
 
     // These are mostly unnecessary, but they make readability better
     val isLikedByUser: Boolean by remember { derivedStateOf { userLike != null && userLike!!.isDislike.not() } }
     val isDislikedByUser: Boolean by remember { derivedStateOf { userLike != null && userLike!!.isDislike } }
+    val postedOn by remember {
+        derivedStateOf {
+            // Format milliseconds to a readable date
+            val date = item.post.createdAt
+            val formattedDate = android.text.format.DateFormat.format("dd MMM yyyy", date)
+            formattedDate.toString()
+        }
+    }
 
 
     suspend fun deletePost() {
@@ -97,18 +109,20 @@ fun PostListItem(
             PostController
                 .getInstance(context.getDatabase().postDao())
                 .deletePost(item.post.id)
+
+            Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
             menuIsExpanded = false
-            reload()
+            onDelete()
         }
     }
 
     // Handle optimistic UI thingies
     suspend fun removeEngagement() {
         // Sanity checks
-        if (user.id == null) throw Exception("User ID is required")
+        if (user?.id == null) throw Exception("User ID is required")
         if (item.post.id == null) throw Exception("Post ID is required")
 
         // Optimistically update the UI
@@ -122,7 +136,7 @@ fun PostListItem(
 
     suspend fun likePost() {
         // Sanity checks
-        if (user.id == null) throw Exception("User ID is required")
+        if (user?.id == null) throw Exception("User ID is required")
         if (item.post.id == null) throw Exception("Post ID is required")
 
         // Optimistically update the UI
@@ -134,7 +148,7 @@ fun PostListItem(
     }
 
     suspend fun dislikePost() {
-        if (user.id == null) throw Exception("User ID is required")
+        if (user?.id == null) throw Exception("User ID is required")
         if (item.post.id == null) throw Exception("Post ID is required")
         // Optimistically update the UI
         likes.add(Like(userId = user.id, postId = item.post.id, isDislike = true, createdAt = System.currentTimeMillis()))
@@ -146,7 +160,7 @@ fun PostListItem(
 
     suspend fun handleEvent(event: PostEvent) {
         try {
-            if (user.id == null) throw Exception("User ID is required")
+            if (user?.id == null) throw Exception("User ID is required")
 
             // If we have liked or disliked the post, remove the engagement
             if (userLike != null) {
@@ -174,7 +188,20 @@ fun PostListItem(
         }
     }
 
-    Surface(modifier = Modifier.fillMaxWidth(), onClick = { navigateToPostDetails(item.post.id!!) }) {
+    @Composable
+    fun Wrapper(content: @Composable () -> Unit) {
+        if (!showFullDetails) {
+            Surface(modifier = Modifier.fillMaxWidth(), onClick = { navigateToPostDetails(item.post.id!!) }) {
+                content()
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                content()
+            }
+        }
+    }
+
+    Wrapper {
         Column {
             Row(
                 modifier = Modifier
@@ -182,12 +209,12 @@ fun PostListItem(
                     .padding(horizontal = PADDING), verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${item.user.firstName.ucFirst()} ${item.user.lastName.ucFirst()}",
+                    text = "${item.user.firstName.ucFirst()} ${item.user.lastName.ucFirst()}" + if (item.post.isApproved == true) "" else " (Pending)",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.outline
                 )
 
-                if (item.user.id == user.id) {
+                if (item.user.id == user?.id) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -212,12 +239,26 @@ fun PostListItem(
                 }
             }
 
-            Box(
+            Column(
                 modifier = Modifier
                     .padding(horizontal = PADDING)
                     .padding(vertical = 6.dp)
             ) {
-                Text(text = item.post.content, color = MaterialTheme.colorScheme.onSurface, overflow = TextOverflow.Ellipsis, maxLines = 4)
+                Text(
+                    text = item.post.content,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = if (showFullDetails) Int.MAX_VALUE else 4
+                )
+
+                Spacer(modifier = Modifier.size(10.dp))
+
+                Text(
+                    text = "Posted on $postedOn",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.outline,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
 
             Row(
@@ -245,13 +286,15 @@ fun PostListItem(
                     )
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.ModeComment, contentDescription = "Comments")
-                    Spacer(modifier = Modifier.size(6.dp))
-                    Text(
-                        text = "${item.comments.size.toString()} comment" + if (item.comments.size != 1) "s" else "",
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+                if (isComment.not()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.ModeComment, contentDescription = "Comments")
+                        Spacer(modifier = Modifier.size(6.dp))
+                        Text(
+                            text = "${item.comments.size.toString()} comment" + if (item.comments.size != 1) "s" else "",
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
                 }
             }
 
@@ -316,6 +359,6 @@ fun PostListItemPreview() {
         user = mockUser(Role.Student),
         navigateToPostDetails = {},
         enterEditMode = {},
-        reload = {}
+        onDelete = {}
     )
 }

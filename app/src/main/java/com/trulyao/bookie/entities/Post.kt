@@ -27,6 +27,26 @@ data class Post(
     @ColumnInfo(name = "modified_at") var modifiedAt: Long,
 )
 
+data class PostWithUser(
+    @Embedded val post: Post,
+
+    @Relation(parentColumn = "owner_id", entityColumn = "id")
+    val user: User,
+
+    @Relation(parentColumn = "id", entityColumn = "post_id")
+    var likes: List<Like>,
+)
+
+data class Comment(
+    @Embedded val post: Post,
+
+    @Relation(parentColumn = "owner_id", entityColumn = "id")
+    val user: User,
+
+    @Relation(parentColumn = "id", entityColumn = "post_id")
+    var likes: List<Like>,
+)
+
 data class PostWithRelations(
     @Embedded val post: Post,
 
@@ -36,6 +56,6 @@ data class PostWithRelations(
     @Relation(parentColumn = "owner_id", entityColumn = "id")
     val user: User,
 
-    @Relation(parentColumn = "id", entityColumn = "parent_id")
-    val comments: List<Post>,
+    @Relation(parentColumn = "id", entityColumn = "parent_id", entity = Post::class)
+    val comments: List<Comment>,
 )

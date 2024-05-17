@@ -38,6 +38,7 @@ import com.trulyao.bookie.views.students.ChangePassword
 import com.trulyao.bookie.views.students.Home
 import com.trulyao.bookie.views.students.PostDetails
 import com.trulyao.bookie.views.students.Profile
+import com.trulyao.bookie.views.students.UserPosts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -118,6 +119,16 @@ fun Root(
                             )
                         }
 
+                        composable(userRoute(UserRoutes.Posts)) {
+                            UserPosts(
+                                user = user,
+                                navigateToPostDetails = { postId ->
+                                    navController.navigate(userRoute(UserRoutes.PostDetails) + "/$postId")
+                                }
+                            )
+                        }
+
+
                         composable(userRoute(UserRoutes.Profile)) {
                             Profile(
                                 user = user,
@@ -136,7 +147,7 @@ fun Root(
 
                         composable(userRoute(UserRoutes.PostDetails) + "/{postId}", arguments = listOf(navArgument("postId") { type = NavType.StringType })) {
                             val postId = it.arguments?.getString("postId")?.toIntOrNull()
-                            PostDetails(postId = postId)
+                            PostDetails(user = user, postId = postId, goBack = { navController.popBackStack() })
                         }
                     }
 

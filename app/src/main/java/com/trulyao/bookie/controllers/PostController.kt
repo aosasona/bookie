@@ -56,6 +56,39 @@ class PostController private constructor(
         return insertedPostId
     }
 
+    suspend fun createComment(context: Context, userId: Int?, parentId: Int?, content: String) {
+        if (userId == 0 || userId == null) throw AppException("User ID is required")
+        if (parentId == 0 || parentId == null) throw AppException("Parent ID is required")
+
+        val user = withContext(dispatcher) {
+            context.getDatabase().userDao().findByID(userId)
+        } ?: throw AppException("User does not exist")
+
+        if (content.isBlank()) throw AppException("Content is required")
+
+        val data = Post(
+            content = content.trim(),
+            ownerId = userId,
+            parentId = parentId,
+            createdAt = System.currentTimeMillis(),
+            modifiedAt = System.currentTimeMillis(),
+        )
+
+        withContext(dispatcher) {
+            dao.createPost(data)
+        }
+    }
+
+    suspend fun deletePost(postId: Int?) {
+        if (postId == 0 || postId == null) throw AppException("Post ID is required")
+
+        val post = withContext(dispatcher) {
+            dao.findPostById(postId)
+        } ?: throw AppException("Post does not exist")
+
+        withContext(dispatcher) { dao.deletePost(post) }
+    }
+
     suspend fun updatePostContent(postId: Int?, content: String) {
         if (postId == 0 || postId == null) throw AppException("Post ID is required")
         if (content.isBlank()) throw AppException("Content is required")
@@ -98,6 +131,22 @@ class PostController private constructor(
         post.user.netHash = ""
 
         return post
+    }
+
+    suspend fun getPostsByUserId(userId: Int?): List<PostWithRelations> {
+        if (userId == 0 || userId == null) throw AppException("User ID is required")
+
+        val posts = withContext(dispatcher) {
+            dao.findPostsWithRelationsByUserId(userId)
+        }
+
+        // Strip sensitive fields from the data
+        posts.forEach { post ->
+            post.user.password = ""
+            post.user.netHash = ""
+        }
+
+        return posts
     }
 
     suspend fun createEngagement(context: Context, userId: Int?, postId: Int?, isDislike: Boolean = false) {

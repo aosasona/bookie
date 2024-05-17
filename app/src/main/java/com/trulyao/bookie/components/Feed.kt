@@ -97,7 +97,7 @@ fun Feed(
                     item = item,
                     user = user!!,
                     navigateToPostDetails = navigateToPostDetails,
-                    reload = { scope.launch { load { stopRefresh() } } },
+                    onDelete = { scope.launch { load { stopRefresh() } } },
                     enterEditMode = { editorMode = PostMode.Edit(it); showNewPostModal = true }
                 )
             }
