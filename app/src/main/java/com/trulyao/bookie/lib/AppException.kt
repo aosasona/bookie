@@ -2,10 +2,7 @@ package com.trulyao.bookie.lib
 
 import android.content.Context
 
-class AppException : Exception {
-    constructor(message: String) : super(message)
-    constructor(message: String, cause: Throwable) : super(message, cause)
-    constructor(cause: Throwable) : super(cause)
+class AppException(message: String) : Exception(message) {
 }
 
 public fun handleException(context: Context, e: Exception) {
