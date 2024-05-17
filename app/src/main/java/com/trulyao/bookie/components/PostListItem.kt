@@ -306,7 +306,7 @@ fun PostListItem(
                 }
             }
 
-            Spacer(modifier = Modifier.size(4.dp))
+            Spacer(modifier = Modifier.size(8.dp))
             HorizontalDivider()
 
         }

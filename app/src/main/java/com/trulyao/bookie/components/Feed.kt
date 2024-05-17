@@ -2,6 +2,7 @@ package com.trulyao.bookie.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -100,6 +101,8 @@ fun Feed(
                     onDelete = { scope.launch { load { stopRefresh() } } },
                     enterEditMode = { editorMode = PostMode.Edit(it); showNewPostModal = true }
                 )
+
+                Spacer(modifier = Modifier.size(8.dp))
             }
         }
 
