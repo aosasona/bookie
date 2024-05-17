@@ -32,9 +32,6 @@ data class PostWithUser(
 
     @Relation(parentColumn = "owner_id", entityColumn = "id")
     val user: User,
-
-    @Relation(parentColumn = "id", entityColumn = "post_id")
-    var likes: List<Like>,
 )
 
 data class Comment(

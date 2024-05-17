@@ -5,6 +5,7 @@ import com.trulyao.bookie.daos.PostDao
 import com.trulyao.bookie.entities.Like
 import com.trulyao.bookie.entities.Post
 import com.trulyao.bookie.entities.PostWithRelations
+import com.trulyao.bookie.entities.PostWithUser
 import com.trulyao.bookie.lib.AppDatabase
 import com.trulyao.bookie.lib.AppException
 import com.trulyao.bookie.lib.getDatabase
@@ -30,6 +31,20 @@ class PostController private constructor(
                     instance ?: PostController(dao, dispatcher).also { repo -> instance = repo }
                 }
             }
+        }
+    }
+
+    suspend fun approvePost(postId: Int?) {
+        if (postId == 0 || postId == null) throw AppException("Post ID is required")
+
+        val post = withContext(dispatcher) {
+            dao.findPostById(postId)
+        } ?: throw AppException("Post does not exist")
+
+        post.isApproved = true
+
+        withContext(dispatcher) {
+            dao.updatePost(post)
         }
     }
 
@@ -70,6 +85,7 @@ class PostController private constructor(
             content = content.trim(),
             ownerId = userId,
             parentId = parentId,
+            isApproved = true, // Pre-approve comments
             createdAt = System.currentTimeMillis(),
             modifiedAt = System.currentTimeMillis(),
         )
@@ -147,6 +163,12 @@ class PostController private constructor(
         }
 
         return posts
+    }
+
+    suspend fun getUnapprovedPosts(): List<PostWithUser> {
+        return withContext(dispatcher) {
+            dao.getUnapprovedPosts()
+        }
     }
 
     suspend fun createEngagement(context: Context, userId: Int?, postId: Int?, isDislike: Boolean = false) {

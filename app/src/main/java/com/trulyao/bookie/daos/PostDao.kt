@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.trulyao.bookie.entities.Post
 import com.trulyao.bookie.entities.PostWithRelations
+import com.trulyao.bookie.entities.PostWithUser
 
 
 @Dao
@@ -27,6 +28,9 @@ interface PostDao {
     @Transaction
     @Query("SELECT * FROM posts WHERE is_approved = 1 AND parent_id IS NULL ORDER BY created_at DESC")
     fun getAllPostsWithRelations(): List<PostWithRelations>
+
+    @Query("SELECT * FROM posts WHERE is_approved = 0 AND parent_id IS NULL ORDER BY created_at DESC")
+    fun getUnapprovedPosts(): List<PostWithUser>
 
     @Update
     fun updatePost(post: Post)
