@@ -50,6 +50,7 @@ class PostController private constructor(
 
     suspend fun createPost(context: Context, userId: Int?, content: String): Long {
         if (userId == 0 || userId == null) throw AppException("User ID is required")
+        if (content.isBlank()) throw AppException("Content is required")
 
         val user = withContext(dispatcher) {
             context.getDatabase().userDao().findByID(userId)
@@ -74,6 +75,7 @@ class PostController private constructor(
     suspend fun createComment(context: Context, userId: Int?, parentId: Int?, content: String) {
         if (userId == 0 || userId == null) throw AppException("User ID is required")
         if (parentId == 0 || parentId == null) throw AppException("Parent ID is required")
+        if (content.isBlank()) throw AppException("Content is required")
 
         val user = withContext(dispatcher) {
             context.getDatabase().userDao().findByID(userId)

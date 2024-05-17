@@ -136,7 +136,11 @@ fun PostDetails(user: User?, postId: Int?, goBack: () -> Unit) {
                                     .height(120.dp),
                             )
 
-                            LoadingButton(isLoading = isSaving, horizontalArrangement = Arrangement.End, onClick = { scope.launch { saveComment() } }) {
+                            LoadingButton(
+                                isLoading = isSaving,
+                                enabled = commentContent.isNotBlank(),
+                                horizontalArrangement = Arrangement.End,
+                                onClick = { scope.launch { saveComment() } }) {
                                 Text("Comment")
                             }
                         }
