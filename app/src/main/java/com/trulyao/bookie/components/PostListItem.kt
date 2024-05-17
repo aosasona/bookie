@@ -225,10 +225,18 @@ fun PostListItem(
                         }
 
                         DropdownMenu(expanded = menuIsExpanded, onDismissRequest = { menuIsExpanded = false }) {
-                            DropdownMenuItem(
-                                text = { TextIconButton(text = "Edit", icon = Icons.Default.Edit) },
-                                onClick = { enterEditMode(item.post) }
-                            )
+                            // Only allow editing if the post is not approved
+                            if (item.post.isApproved == false) {
+                                DropdownMenuItem(
+                                    text = {
+                                        TextIconButton(
+                                            text = "Edit",
+                                            icon = Icons.Default.Edit
+                                        )
+                                    },
+                                    onClick = { enterEditMode(item.post) }
+                                )
+                            }
 
                             DropdownMenuItem(
                                 text = { TextIconButton(text = "Delete", icon = Icons.Default.Delete, color = Color.Red) },
