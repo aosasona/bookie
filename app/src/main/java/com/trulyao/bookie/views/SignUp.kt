@@ -86,6 +86,12 @@ fun SignUp(navigateToSignIn: () -> Unit) {
                 alertType = Alert.AlertType.Success,
                 message = "Your account has been successfully created, you can now proceed to sign in :)",
             )
+
+            // Reset form fields
+            firstName = ""
+            lastName = ""
+            email = ""
+            password = ""
         } catch (e: Exception) {
             handleException(context, e)
         } finally {
